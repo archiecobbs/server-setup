@@ -46,4 +46,10 @@
             </sequential>
         </antcontrib:for>
     </target>
+
+    <!-- Install RPMs on this (the build) system -->
+    <target name="install" depends="build" unless="install.completed">
+        <dellroad:rpminstall force="true"/>
+        <property name="install.completed" value="true"/>
+    </target>
 </project>

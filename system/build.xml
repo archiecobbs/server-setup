@@ -11,10 +11,4 @@
 
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
-
-    <!-- Install RPM on this (the build) system -->
-    <target name="install" depends="build" unless="install.completed">
-        <dellroad:rpminstall force="true"/>
-        <property name="install.completed" value="true"/>
-    </target>
 </project>
