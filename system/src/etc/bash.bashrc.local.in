@@ -11,7 +11,7 @@ function bb() {
 }
 
 function grepfor() {
-    find . \( \! -name .svn -o -prune \) -a \! -name '.*.swp' -a -type f -print0 | xargs -0 grep ${1+"$@"}
+    find . \( \! \( -name .svn -o -name .git \) -o -prune \) -a \! -name '.*.swp' -a -type f -print0 | xargs -0 grep ${1+"$@"}
 }
 
 function la() {
