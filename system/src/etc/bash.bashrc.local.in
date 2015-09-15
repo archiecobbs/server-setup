@@ -1,0 +1,251 @@
+# $Id: bash.bashrc.local 2503 2013-04-09 20:42:58Z archie $
+
+# Files, directories, command line
+
+function b() {
+    cd .. && pwd
+}
+
+function bb() {
+    cd ../.. && pwd
+}
+
+function grepfor() {
+    find . \( \! -name .svn -o -prune \) -a \! -name '.*.swp' -a -type f -print0 | xargs -0 grep ${1+"$@"}
+}
+
+function la() {
+    /bin/ls -aF ${1+"$@"}
+}
+
+function ll() {
+    /bin/ls --color=auto -lF ${1+"$@"}
+}
+
+function ls() {
+    /bin/ls --color=auto -F ${1+"$@"}
+}
+
+function l() {
+    /bin/ls -l --color=auto ${1+"$@"}
+}
+
+function t() {
+    less ${1+"$@"}
+}
+
+function pd() {
+    pushd ${1+"$@"}
+}
+
+function h() {
+    history ${1+"$@"}
+}
+
+function hf() {
+    history | grep ${1+"$@"}
+}
+
+function tt() {
+    tree ${1+"$@"} | less
+}
+
+function daemonize() {
+    ( ${1+"$@"} >/dev/null 2>&1 & )
+}
+
+# Git shortcuts
+
+function ga() {
+    git add ${1+"$@"}
+}
+
+function gs() {
+    git status ${1+"$@"}
+}
+
+function gd() {
+    git diff --color ${1+"$@"}
+}
+
+function gb() {
+    git branch ${1+"$@"}
+}
+
+function gc() {
+    git checkout ${1+"$@"}
+}
+
+function gp() {
+    git pull ${1+"$@"}
+}
+
+# SVN shortcuts
+
+function ci() {
+    svn commit ${1+"$@"}
+}
+
+function cl() {
+    svn log ${1+"$@"} | less -p ^------------------------------------------------------------------------
+}
+
+function dif() {
+    svn diff --no-diff-deleted ${1+"$@"}
+}
+
+function dt() {
+    svn diff --no-diff-deleted ${1+"$@"} | less -p '^[PI][rn][od][pe][ex]'
+}
+
+function lt() {
+    svn log ${1+"$@"} | less -p '^r[0-9]+'
+}
+
+function st() {
+    svn status ${1+"$@"}
+}
+
+function up() {
+    svn update ${1+"$@"}
+}
+
+function up2() {
+    svn update --ignore-externals ${1+"$@"}
+}
+
+function dtb() {
+    svn diff --no-diff-deleted -x -ubB --diff-cmd `which diff` ${1+"$@"} | less -p ^Index
+}
+
+function dtB() {
+    svn diff --no-diff-deleted -x -U15 --diff-cmd `which diff` ${1+"$@"} | less -p ^Index
+}
+
+function dtp() {
+    svn diff -c ${1+"$@"} | less -p ^Index
+}
+
+function bt() {
+    PAT=${2:-"^[[:space:]]+[0-9]+"}
+    svn blame -g "${1}" | less -p "${PAT}"
+}
+
+function pex() {
+    svn pe svn:externals ${1+"$@"}
+}
+
+function pcp() {
+    svn ps svn:externals "`svn pg --strict svn:externals \"${1}\"`" "${2}" 
+}
+
+function svnlog() {
+    svn pe svn:log --revprop ${1+"$@"} --editor-cmd vi
+}
+
+function svnclean() {
+    find ${1:-"."} -type f -name "*.rej" -o -name "*.orig" | xargs rm -rf
+}
+
+# File viewing
+
+function hd() {
+    hexdump -C ${1+"$@"}
+}
+
+function g() {
+    grep --color ${1+"$@"}
+}
+
+function tf() {
+    tail -F -n30 ${1+"$@"}
+}
+
+function tz() {
+    gunzip < ${1+"$@"} | less
+}
+
+# Zypper stuff
+
+function zh() {
+    cat /var/log/zypp/history | grep -v "^#" | awk -F\| '{ print $1" | "$2" | "$4" | "$3 }'
+}
+
+# Set locale
+export LANG='en_US.UTF-8'
+export LC_ALL='en_US.UTF-8'
+
+# Set aliases
+unalias -a
+alias ,='cd -'
+
+# Git bash completion (if installed)
+_GIT_PROMPT_STUFF=""
+if [ -f /etc/bash_completion.d/git-prompt.sh ]; then
+    . /etc/bash_completion.d/git-prompt.sh
+    GIT_PS1_SHOWDIRTYSTATE="true"
+    GIT_PS1_SHOWSTASHSTATE="true"
+    GIT_PS1_SHOWUNTRACKEDFILES="true"
+    GIT_PS1_SHOWUPSTREAM="auto"
+    _GIT_PROMPT_STUFF='$(__git_ps1 " (%s)")'
+fi
+
+# Prompt setup
+_PROMPT_HOST=`cat /etc/HOSTNAME | sed -r 's/\.(@org_domain@)$//g'`
+_PROMPT_SITE=`echo "${_PROMPT_HOST}" | sed -rn 's/^(.+)\.([^.]+)$/\2/gp'`
+_PROMPT_USER_WEIGHT=""
+_PROMPT_USER_COLOR=""
+_PROMPT_SITE_WEIGHT=""
+_PROMPT_SITE_COLOR=""
+_PROMPT_USER_RESET=""
+_PROMPT_SITE_RESET=""
+
+# Get color sequences for prompt
+if [ `id -u` -eq 0 ]; then
+    if [ -n "${TERM}" -a "${TERM}" != 'dumb' ]; then
+        _PROMPT_USER_WEIGHT="tput bold"
+        _PROMPT_USER_COLOR="tput setaf 1"
+    fi
+fi
+if [[ "${_PROMPT_SITE}" =~ ^(demo|test|dev) ]]; then
+    _PROMPT_SITE=""
+elif [ "${_PROMPT_SITE}" != "" ]; then
+    _PROMPT_HOST=`echo "${_PROMPT_HOST}" | sed -rn 's/^(.+\.)([^.]+)$/\1/gp'`
+    if [ -n "${TERM}" -a "${TERM}" != 'dumb' ]; then
+        _PROMPT_SITE_WEIGHT="tput bold"
+        _PROMPT_SITE_COLOR="tput setaf 1"
+    fi
+fi
+if [ -n "${_PROMPT_USER_COLOR}" ]; then
+    _PROMPT_USER_RESET="tput sgr0"
+fi
+if [ -n "${_PROMPT_SITE_COLOR}" ]; then
+    _PROMPT_SITE_RESET="tput sgr0"
+fi
+
+# Set prompt
+if ! shopt -q restricted_shell; then
+    PS1='[\['$(${_PROMPT_USER_WEIGHT})$(${_PROMPT_USER_COLOR})'\]\u\['$(${_PROMPT_USER_RESET})'\]@'${_PROMPT_HOST}'\['$(${_PROMPT_SITE_WEIGHT})$(${_PROMPT_SITE_COLOR})'\]'${_PROMPT_SITE}'\['$(${_PROMPT_SITE_RESET})'\]'${_GIT_PROMPT_STUFF}'] \! '
+fi
+
+unset _PROMPT_USER_WEIGHT
+unset _PROMPT_USER_COLOR
+unset _PROMPT_SITE_WEIGHT
+unset _PROMPT_SITE_COLOR
+unset _PROMPT_HOST
+unset _PROMPT_SITE
+unset _PROMPT_USER_RESET
+unset _PROMPT_SITE_RESET
+unset _GIT_PROMPT_STUFF
+
+# Configure history
+export HISTTIMEFORMAT='%F %T '
+export HISTCONTROL=ignoredups
+
+# Read machine-specific files
+for FILE in `find @datadir@/@org_id@-system/bashrc -mindepth 1 -maxdepth 1 -type f -name '*.sh' | sort`; do
+    if [ -r "${FILE}" ]; then
+        . "${FILE}"
+    fi
+done
+

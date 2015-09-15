@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="sshd"
+  default="build"
+  basedir="."
+  xmlns:dellroad="urn:org.dellroad.ant"
+  xmlns:antcontrib="urn:net.sf.antcontrib">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+
+    <!-- Install RPM on this (the build) system -->
+    <target name="install" depends="build" unless="install.completed">
+        <dellroad:rpminstall force="true"/>
+        <property name="install.completed" value="true"/>
+    </target>
+</project>
