@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="users"
+  default="build"
+  basedir="."
+  xmlns:antcontrib="urn:net.sf.antcontrib"
+  xmlns:dellroad="urn:org.dellroad.ant">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+
+    <!-- Read machine classes -->
+    <target name="machine.classes" unless="machine.classes">
+        <xslt style="src/xsl/machine-classes.xsl" in="src/xml/accounts.xml"
+          out="build/machine-classes.properties"/>
+        <property file="build/machine-classes.properties"/>
+    </target>
+
+    <!-- Validate accounts.xsd -->
+    <target name="schema-validate" description="Validate accounts.xsd">
+        <xmlvalidate failonerror="true" warn="yes" lenient="no">
+            <classpath refid="build.classpath"/>
+            <fileset dir="${basedir}" includes="src/xsd/accounts.xsd"/>
+            <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema-full-checking" value="true"/>
+            <property name="http://apache.org/xml/properties/schema/external-schemaLocation"
+              value="http://www.w3.org/2001/XMLSchema ${basedir}/src/xsd/XMLSchema.xsd
+              http://www.w3.org/XML/1998/namespace ${basedir}/src/xsd/xml.xsd"/>
+        </xmlvalidate>
+    </target>
+
+    <!-- Validate accounts.xml -->
+    <target name="users-validate" description="Validate accounts.xml">
+        <xmlvalidate failonerror="true" warn="yes" lenient="no">
+            <fileset dir="${basedir}" includes="src/xml/accounts.xml"/>
+            <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema-full-checking" value="true"/>
+            <property name="http://apache.org/xml/properties/schema/external-schemaLocation"
+              value="http://www.w3.org/2001/XMLSchema ${basedir}/src/xsd/XMLSchema.xsd
+              http://www.w3.org/XML/1998/namespace ${basedir}/src/xsd/xml.xsd"/>
+            <property name="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation"
+              value="${basedir}/src/xsd/accounts.xsd"/>
+        </xmlvalidate>
+    </target>
+
+    <!-- Generate spec files and build RPMs -->
+    <target name="build" depends="clean, schema-validate, users-validate, machine.classes">
+
+        <!-- Generate spec files -->
+        <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
+            <sequential>
+                <xslt style="src/xsl/spec.xsl" in="src/xml/accounts.xml"
+                  out="build/${ant.project.name}-@{machine.class}.spec">
+                    <param name="machine-classes" expression="${machine.classes}"/>
+                    <param name="machine-class" expression="@{machine.class}"/>
+                    <param name="this" expression="${ant.project.name}"/>
+                </xslt>
+            </sequential>
+        </antcontrib:for>
+
+        <!-- Build RPMs -->
+        <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
+            <sequential>
+                <dellroad:rpmbuild fresh="false" specfile="../../build/${ant.project.name}-@{machine.class}.spec"
+                  rpmflags="${build.standard.rpm.flags} ${build.extra.rpm.flags}">
+                    <source-preparation>
+                        <zip destfile="build/rpm/SOURCES/${ant.project.name}-@{machine.class}.zip">
+                            <zipfileset dir="src">
+                                <include name="home/**"/>
+                            </zipfileset>
+                        </zip>
+                    </source-preparation>
+                </dellroad:rpmbuild>
+            </sequential>
+        </antcontrib:for>
+
+        <!-- Clean up -->
+        <delete dir="build/packages/RPMS/*"/>
+        <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
+            <sequential>
+                <delete file="build/${ant.project.name}-@{machine.class}.spec"/>
+            </sequential>
+        </antcontrib:for>
+    </target>
+</project>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet href="accounts.xsl" type="text/xsl"?>
+
+<accounts>
+
+<!-- MACHINE CLASSES -->
+
+<!--
+    These can be whatever you want, but any machine can only be in one class.
+
+    Machine classes correspond to RPM names, e.g., example-users-foo, example-users-bar, etc.
+
+    There must be at least one machine class.
+-->
+
+    <machine-class name="default"/>
+
+<!-- PRIVILEGES -->
+
+<!--
+    Privileges allow user accounts to do things. They are granted to groups, and
+    so are granted to a user indirectly via the user's groups.
+
+    There are five types of privilege:
+
+        Element                     Description
+        ======                      ===========
+
+        <nonShellAccount>           Give user an account that is not allowed to login
+        <restrictedShellAccount>    Give user an account that runs a restricted bash shell (/bin/rbash)
+        <shellAccount>              Give user a normal login account
+        <unixGroup name="...">      Put user in the specified group (may be repeated)
+        <sudo>                      Give user sudo(8) right(s) (may be repeated)
+
+    At most one shell account tag may appear in a privilege; otherwise, tags must appear in the above order.
+
+    Each <privilege> has three required attributes:
+
+        o The "name" which must be unique
+        o The "machine-class" to which it applies
+        o The "hosts" (regular expression) which must match the target machine's hostname
+-->
+
+    <privilege name="all-account" machine-class="default" hosts=".*">
+        <shellAccount/>
+    </privilege>
+    <privilege name="all-superuser" machine-class="default" hosts=".*">
+        <shellAccount/>
+        <sudo>ALL</sudo>
+    </privilege>
+    <privilege name="nagios-check-commands" machine-class="default" hosts="^.*\.operations\.example\.com$">
+        <nonShellAccount/>
+        <sudo>/usr/sbin/exim</sudo>
+        <sudo>/bin/rpm</sudo>
+        <sudo>/bin/find</sudo>
+        <sudo>/usr/bin/xml</sudo>
+        <sudo>/usr/bin/jstat</sudo>
+        <sudo>/usr/bin/jmap</sudo>
+    </privilege>
+    <privilege name="backups" machine-class="default" hosts=".*">
+        <unixGroup name="sysbackup"/>
+    </privilege>
+
+<!-- GROUPS -->
+
+    <group groupname="sysadmins">
+        <privilege name="all-superuser"/>
+        <privilege name="backups"/>
+    </group>
+    <group groupname="nagios-checkers">
+        <privilege name="nagios-check-commands"/>
+    </group>
+
+<!-- USERS -->
+
+<!--
+    Define the UNIX users for whom accounts should be created.
+    Put users in the groups that give them the privileges they require.
+-->
+
+    <user username="esnowden">
+        <group groupname="sysadmins"/>
+    </user>
+    <user username="nagios">
+        <group groupname="nagios-checkers"/>
+    </user>
+
+</accounts>
+

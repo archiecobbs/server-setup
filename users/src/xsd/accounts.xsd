@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:element name="accounts" type="accountsType">
+
+        <!-- Machine classes must be unique -->
+        <xsd:key name="machineClassKey">
+            <xsd:selector xpath="machine-class"/>
+            <xsd:field xpath="@name"/>
+        </xsd:key>
+
+        <!-- Privileges must be unique -->
+        <xsd:key name="privilegeKey">
+            <xsd:selector xpath="privilege"/>
+            <xsd:field xpath="@name"/>
+        </xsd:key>
+
+        <!-- Groups must be unique -->
+        <xsd:key name="groupKey">
+            <xsd:selector xpath="group"/>
+            <xsd:field xpath="@groupname"/>
+        </xsd:key>
+
+        <!-- Users must be unique -->
+        <xsd:key name="userKey">
+            <xsd:selector xpath="user"/>
+            <xsd:field xpath="@username"/>
+        </xsd:key>
+
+        <!-- Privilege machine classes must point to <machine-class> tags -->
+        <xsd:keyref name="privilegeMachineClassRef" refer="machineClassKey">
+            <xsd:selector xpath="privilege/machine-class"/>
+            <xsd:field xpath="@name"/>
+        </xsd:keyref>
+
+        <!-- Group privileges must point to <privilege> tags -->
+        <xsd:keyref name="groupPrivilegeRef" refer="privilegeKey">
+            <xsd:selector xpath="group/privilege"/>
+            <xsd:field xpath="@name"/>
+        </xsd:keyref>
+
+        <!-- User groups must point to <group> tags -->
+        <xsd:keyref name="userGroupRef" refer="groupKey">
+            <xsd:selector xpath="user/group"/>
+            <xsd:field xpath="@groupname"/>
+        </xsd:keyref>
+
+    </xsd:element>
+
+    <xsd:complexType name="accountsType">
+        <xsd:sequence>
+            <xsd:element name="machine-class" type="machineClassType" maxOccurs="unbounded"/>
+            <xsd:element name="privilege" type="privilegeType" maxOccurs="unbounded"/>
+            <xsd:element name="group" type="groupType" maxOccurs="unbounded">
+                <xsd:key name="groupPrivilegeKey">
+                    <xsd:selector xpath="privilege"/>
+                    <xsd:field xpath="@name"/>
+                </xsd:key>
+                <xsd:unique name="groupPrivilegeUnique">
+                    <xsd:selector xpath="privilege"/>
+                    <xsd:field xpath="@name"/>
+                </xsd:unique>
+            </xsd:element>
+            <xsd:element name="user" type="userType" maxOccurs="unbounded">
+                <xsd:key name="userGroupKey">
+                    <xsd:selector xpath="group"/>
+                    <xsd:field xpath="@groupname"/>
+                </xsd:key>
+                <xsd:unique name="userGroupUnique">
+                    <xsd:selector xpath="group"/>
+                    <xsd:field xpath="@groupname"/>
+                </xsd:unique>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="machineClassType">
+         <xsd:attribute name="name" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="privilegeType">
+        <xsd:sequence>
+            <xsd:choice>
+                <xsd:element name="nonShellAccount" type="accountType" minOccurs="0"/>
+                <xsd:element name="restrictedShellAccount" type="accountType" minOccurs="0"/>
+                <xsd:element name="shellAccount" type="accountType" minOccurs="0"/>
+            </xsd:choice>
+            <xsd:element name="unixGroup" type="groupPrivilegeType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="sudo" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" use="required"/>
+        <xsd:attribute name="machine-class" use="required"/>
+        <xsd:attribute name="hosts" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="accountType"/>
+
+    <xsd:complexType name="userType">
+        <xsd:sequence>
+            <xsd:element name="group" type="userGroupType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="username" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="groupType">
+        <xsd:sequence>
+            <xsd:element name="privilege" type="groupPrivilegeType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="groupname" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="userGroupType">
+        <xsd:attribute name="groupname" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="groupPrivilegeType">
+        <xsd:attribute name="name" use="required"/>
+    </xsd:complexType>
+
+</xsd:schema>
