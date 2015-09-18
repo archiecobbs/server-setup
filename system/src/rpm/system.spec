@@ -18,7 +18,7 @@
 %define localtime       %{_sysconfdir}/localtime
 
 Name:               %{org_id}-system
-Version:            %{gitrev}
+Version:            %(echo %{gitrev} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Basic System Setup
 Group:              System/Setup

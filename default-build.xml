@@ -9,7 +9,15 @@
     <!-- Import ant macros and set build properties -->
     <dirname property="default.build.basedir" file="${ant.file.default-build}"/>
     <property file="${default.build.basedir}/build.properties"/>
-    <property name="build.rpm.flags" value=""/>
+    <property name="build.standard.rpm.flags" value="
+      --define 'gitrev ${gitrev}'
+      --define 'osname ${build.os.name}'
+      --define 'org_id ${org.id}'
+      --define 'org_name ${org.name}'
+      --define 'org_domain ${org.domain}'
+      --define 'time_zone ${time.zone}'
+    "/>
+    <property name="build.extra.rpm.flags" value=""/>
     <import file="${default.build.basedir}/build/macros.xml"/>
     <dellroad:gitrevision property="gitrev"/>
 
@@ -18,13 +26,9 @@
         <antcontrib:for list="${build.os.versions}" param="osver" trim="true">
             <sequential>
                 <dellroad:rpmbuild fresh="false" rpmflags="
-                  --define 'gitrev ${gitrev}'
-                  --define 'osname ${build.os.name}'
                   --define 'osrel @{osver}'
-                  --define 'org_id ${org.id}'
-                  --define 'org_name ${org.name}'
-                  --define 'org_domain ${org.domain}'
-                  ${build.rpm.flags}
+                  ${build.standard.rpm.flags}
+                  ${build.extra.rpm.flags}
                 ">
                     <source-preparation>
                         <zip destfile="build/rpm/SOURCES/source.zip">

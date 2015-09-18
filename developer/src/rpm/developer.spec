@@ -12,7 +12,7 @@
 %define antconf     %{_sysconfdir}/ant.conf
 
 Name:               %{org_id}-developer
-Version:            %{gitrev}
+Version:            %(echo %{gitrev} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Developer Setup (%{osname}%{osrel})
 Group:              Development/Tools

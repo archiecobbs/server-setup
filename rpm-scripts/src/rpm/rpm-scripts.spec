@@ -12,7 +12,7 @@
 %define pkgdir      %{_datadir}/%{name}
 
 Name:               %{org_id}-rpm-scripts
-Version:            %{gitrev}
+Version:            %(echo %{gitrev} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} RPM scripts
 Group:              Development/Tools

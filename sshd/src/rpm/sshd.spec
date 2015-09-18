@@ -13,7 +13,7 @@
 %define sshdver     6.6p1
 
 Name:               %{org_id}-sshd
-Version:            %{gitrev}
+Version:            %(echo %{gitrev} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} sshd(8) system configuration (%{osname}%{osrel})
 Group:              System/Setup

@@ -6,9 +6,6 @@
   xmlns:dellroad="urn:org.dellroad.ant"
   xmlns:antcontrib="urn:net.sf.antcontrib">
 
-    <!-- Set RPM build flags -->
-    <property name="build.rpm.flags" value="--define 'time_zone ${time.zone}'"/>
-
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
 </project>
