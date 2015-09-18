@@ -1,0 +1,10 @@
+# $Id: repo-update-non-oss.repo.in 200 2013-04-10 16:49:13Z archie $
+
+[repo-update-non-oss]
+name=openSUSE Update Non-OSS (@susever@)
+type=rpm-md
+baseurl=http://download.opensuse.org/update/@susever@-non-oss/
+gpgcheck=1
+enabled=1
+autorefresh=0
+keeppackages=0

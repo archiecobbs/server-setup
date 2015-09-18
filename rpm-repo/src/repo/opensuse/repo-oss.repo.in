@@ -1,0 +1,10 @@
+# $Id: repo-oss.repo.in 200 2013-04-10 16:49:13Z archie $
+
+[repo-oss]
+name=openSUSE OSS (@susever@)
+type=yast2
+baseurl=http://download.opensuse.org/distribution/@susever@/repo/oss/
+gpgcheck=1
+enabled=1
+autorefresh=0
+keeppackages=0

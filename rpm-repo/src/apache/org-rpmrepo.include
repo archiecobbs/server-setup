@@ -1,0 +1,13 @@
+
+# Map RPM repositories into Apache web space under @repourlpath@/
+Alias @repourlpath@/ "@repodir@"
+<Directory "@repodir@">
+    Options                 FollowSymLinks Indexes IncludesNoExec
+    AllowOverride           None
+    AuthType                basic
+    AuthName                "@org_name@ RPM Repository"
+    AuthBasicProvider       @org_id@-rpmrepo
+    Require                 valid-user
+    Satisfy                 all
+</Directory>
+

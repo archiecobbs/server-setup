@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="rpm-repo"
+  default="build"
+  basedir="."
+  xmlns:dellroad="urn:org.dellroad.ant"
+  xmlns:antcontrib="urn:net.sf.antcontrib">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+
+    <!-- RPM repo -->
+    <target name="rpm-repo" depends="clean" unless="rpm-repo.completed">
+        <dellroad:rpmbuild fresh="false" specfile="rpm-repo.spec" rpmflags="
+          --define 'os_name ${build.os.name}'
+          --define 'os_versions ${build.os.versions}'
+          --define 'repo_dir ${rpm.repo.dir}'
+          --define 'repo_host ${rpm.repo.host}'
+          --define 'repo_urlpath ${rpm.repo.urlpath}'
+          --define 'repo_pass ${rpm.repo.password}'
+          ${build.standard.rpm.flags}
+          ${build.extra.rpm.flags}
+        ">
+            <source-preparation>
+                <zip destfile="build/rpm/SOURCES/source.zip">
+                    <zipfileset dir="src">
+                        <include name="**/*"/>
+                    </zipfileset>
+                </zip>
+            </source-preparation>
+        </dellroad:rpmbuild>
+
+        <!-- Done -->
+        <property name="rpm-repo.completed" value="true"/>
+    </target>
+
+    <!-- Zypper repos RPMs - one for each O/S version -->
+    <target name="zypper-repos" depends="clean" unless="zypper-repos.completed">
+
+        <!-- Build client-side zypper repo RPMs, one for each O/S version -->
+        <antcontrib:for list="${build.os.versions}" param="osver" trim="true">
+            <sequential>
+                <dellroad:rpmbuild fresh="false" specfile="zypper-repos.spec" rpmflags="
+                  --define 'osrel @{osver}'
+                  --define 'repo_dir ${rpm.repo.dir}'
+                  --define 'repo_host ${rpm.repo.host}'
+                  --define 'repo_urlpath ${rpm.repo.urlpath}'
+                  --define 'repo_pass ${rpm.repo.password}'
+                  ${build.standard.rpm.flags}
+                  ${build.extra.rpm.flags}
+                  ">
+                    <source-preparation>
+                        <zip destfile="build/rpm/SOURCES/source.zip">
+                            <zipfileset dir="src">
+                                <include name="scripts/*"/>
+                                <include name="repo/**/*"/>
+                            </zipfileset>
+                        </zip>
+                    </source-preparation>
+                </dellroad:rpmbuild>
+            </sequential>
+        </antcontrib:for>
+
+        <!-- Done -->
+        <property name="zypper-repos.completed" value="true"/>
+    </target>
+
+    <!-- Build zypper-repos RPM as well -->
+    <target name="build" depends="clean, rpm-repo, zypper-repos"/>
+
+</project>

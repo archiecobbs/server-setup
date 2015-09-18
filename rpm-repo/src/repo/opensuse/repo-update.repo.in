@@ -1,0 +1,10 @@
+# $Id: repo-update.repo.in 200 2013-04-10 16:49:13Z archie $
+
+[repo-update]
+name=openSUSE Update (@susever@)
+type=rpm-md
+baseurl=http://download.opensuse.org/update/@susever@/
+gpgcheck=1
+enabled=1
+autorefresh=0
+keeppackages=0
