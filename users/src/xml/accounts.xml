@@ -29,8 +29,8 @@
         <nonShellAccount>           Give user an account that is not allowed to login
         <restrictedShellAccount>    Give user an account that runs a restricted bash shell (/bin/rbash)
         <shellAccount>              Give user a normal login account
-        <unixGroup name="...">      Put user in the specified group (may be repeated)
-        <sudo>                      Give user sudo(8) right(s) (may be repeated)
+        <unixGroup name="...">      Put user in the specified group
+        <sudo>                      Give user sudo(8) right(s)
 
     At most one shell account tag may appear in a privilege; otherwise, tags must appear in the above order.
 
