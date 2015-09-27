@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--
+    This is an example SMTP routing configuration file.
+-->
+
+<routing>
+
+    <!-- SMTP server information -->
+    <server hostname="smtp.example.com"/>
+    <local domain="example.com"/>
+
+    <!-- Who does root email forward to -->
+    <root user="dilbert"/>
+
+    <!-- Define each real person using an actual email address we can forward to -->
+    <users>
+        <user name="dilbert" email="dilbert@gmail.com" password="96e08a400752"/>
+        <user name="alice" email="alice.arblarb@aol.com" password="f6582b9585ef"/>
+        <user name="bob" email="bob.blahblah@hotmail.com" password="07c6a86236ae"/>
+    </users>
+
+    <!-- Define all email addresses and how they are routed for each domain -->
+    <domain name="example.com">
+
+        <!-- System addresses -->
+        <forward name="abuse">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="administrator">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="mailer-daemon">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="webmaster">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="postmaster">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="root">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="spam">
+            <dest user="dilbert"/>
+        </forward>
+
+        <!-- Actual people -->
+        <forward name="dilbert">
+            <dest user="dilbert"/>
+        </forward>
+        <forward name="alice">
+            <dest user="alice"/>
+        </forward>
+        <forward name="aarblarb">
+            <dest user="alice"/>
+        </forward>
+        <forward name="bob">
+            <dest user="bob"/>
+        </forward>
+        <forward name="bblahblah">
+            <dest user="bob"/>
+        </forward>
+
+        <!-- Mailing lists -->
+        <forward name="all">
+            <dest user="dilbert"/>
+            <dest user="alice"/>
+            <dest user="bob"/>
+        </forward>
+        <forward name="sales">
+            <dest user="alice"/>
+            <dest user="bob"/>
+        </forward>
+
+    </domain>
+
+    <!-- Add additional <domain> tags here... -->
+
+</routing>

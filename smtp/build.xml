@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="smtp"
+  default="build"
+  basedir="."
+  xmlns:dellroad="urn:org.dellroad.ant"
+  xmlns:antcontrib="urn:net.sf.antcontrib">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+
+    <target name="schema-validate" description="Validate routing.xsd">
+        <xmlvalidate failonerror="true" warn="yes" lenient="no">
+            <classpath refid="build.classpath"/>
+            <fileset dir="${basedir}" includes="src/xsd/routing.xsd"/>
+            <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema-full-checking" value="true"/>
+            <property name="http://apache.org/xml/properties/schema/external-schemaLocation"
+              value="http://www.w3.org/2001/XMLSchema ${basedir}/src/xsd/XMLSchema.xsd
+              http://www.w3.org/XML/1998/namespace ${basedir}/src/xsd/xml.xsd"/>
+        </xmlvalidate>
+    </target>
+
+    <target name="validate" depends="schema-validate" description="Validate routing.xml">
+        <xmlvalidate failonerror="true" warn="yes" lenient="no">
+            <fileset dir="${basedir}" includes="src/xml/routing.xml"/>
+            <attribute name="http://xml.org/sax/features/namespaces" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema" value="true"/>
+            <attribute name="http://apache.org/xml/features/validation/schema-full-checking" value="true"/>
+            <property name="http://apache.org/xml/properties/schema/external-schemaLocation"
+              value="http://www.w3.org/2001/XMLSchema ${basedir}/src/xsd/XMLSchema.xsd
+              http://www.w3.org/XML/1998/namespace ${basedir}/src/xsd/xml.xsd"/>
+            <property name="http://apache.org/xml/properties/schema/external-noNamespaceSchemaLocation"
+              value="${basedir}/src/xsd/routing.xsd"/>
+        </xmlvalidate>
+    </target>
+
+    <!-- Validate XML before then building RPM-->
+    <target name="build" depends="clean, validate, default-build.build"/>
+
+</project>
+

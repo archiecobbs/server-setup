@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!-- $Id: routing.xsd 1179 2014-03-05 18:37:36Z archie $ -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+    <xsd:element name="routing" type="routingType">
+
+        <!-- Identify users via unique username -->
+        <xsd:key name="userKey">
+            <xsd:selector xpath="users/user"/>
+            <xsd:field xpath="@name"/>
+        </xsd:key>
+
+        <!-- Identify domains via unique domain -->
+        <xsd:key name="domainKey">
+            <xsd:selector xpath="domain"/>
+            <xsd:field xpath="@name"/>
+        </xsd:key>
+
+        <!-- Local domain must exist -->
+        <xsd:keyref name="localDomainKeyRef" refer="domainKey">
+            <xsd:selector xpath="local"/>
+            <xsd:field xpath="@domain"/>
+        </xsd:keyref>
+
+        <!-- Root user must exist -->
+        <xsd:keyref name="rootUserKeyRef" refer="userKey">
+            <xsd:selector xpath="root"/>
+            <xsd:field xpath="@user"/>
+        </xsd:keyref>
+
+        <!-- Forward dest users must exist -->
+        <xsd:keyref name="forwardUserKeyRef" refer="userKey">
+            <xsd:selector xpath="domain/forward/dest"/>
+            <xsd:field xpath="@user"/>
+        </xsd:keyref>
+    </xsd:element>
+
+    <xsd:complexType name="routingType">
+        <xsd:sequence>
+            <xsd:element name="server" type="serverType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="local" type="localType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="root" type="rootType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="users" type="usersType" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="domain" type="domainType" minOccurs="1" maxOccurs="unbounded">
+
+                <!-- Forward destinations should be unique -->
+                <xsd:unique name="forwardDestUnique">
+                    <xsd:selector xpath="forward"/>
+                    <xsd:field xpath="@name"/>
+                </xsd:unique>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="serverType">
+        <xsd:attribute name="hostname" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="localType">
+        <xsd:attribute name="domain" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="rootType">
+        <xsd:attribute name="user" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="usersType">
+        <xsd:sequence>
+            <xsd:element name="user" type="userType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="userType">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="email" type="xsd:string" use="required"/>
+        <xsd:attribute name="password" type="xsd:string" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="domainType">
+        <xsd:sequence>
+            <xsd:element name="forward" type="forwardType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="forwardType">
+        <xsd:sequence>
+            <xsd:element name="dest" type="destType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="destType">
+        <xsd:attribute name="user" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+</xsd:schema>
