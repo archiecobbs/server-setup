@@ -45,6 +45,7 @@ Requires:           lsof
 Requires:           mailx
 Requires:           man
 Requires:           man-pages
+Requires:           net-tools
 Requires:           ntp
 Requires:           openssl
 Requires:           patch
@@ -62,6 +63,7 @@ Requires(post):     syslog-service
 Requires:           sysstat
 Requires:           tcpdump
 Requires:           telnet
+Requires:           traceroute
 Requires:           tree
 Requires:           update-alternatives
 Requires:           vim
