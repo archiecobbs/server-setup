@@ -18,7 +18,7 @@
 Name:               %{org_id}-smtp
 Version:            %(echo %{gitrev} | tr - .)
 Release:            1.%{osname}%{osrel}
-Summary:            %{org_name} Setup for EXIM  (%{osname}%{osrel})
+Summary:            %{org_name} Setup for SMTP Routing (%{osname}%{osrel})
 Group:              System/Setup
 License:            Apache-2.0
 Distribution:       %{org_name} Server Setup
