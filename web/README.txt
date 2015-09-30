@@ -29,6 +29,17 @@ The HTTP server is configured as follows:
 
         Addtional config in /usr/share/example-web/apache/*.port443.include
 
+You must supply the SSL key, certificate, and intermediate certificate:
+
+    src/ssl/web.key - SSL private key
+    src/ssl/web.crt - SSL certificate
+    src/ssl/int.crt - SSL intermediate certificate (empty file if none)
+
+You can create a new key, CSR (certificate signing request), and optionally self-signed
+certificate using the included new-key-and-csr.sh script.
+
+Run `new-key-and-csr.sh --help' for details.
+
 To configure users and one-time passwords for /private access:
 
     o As root, add a user to the users.txt database and copy the user's OTP key

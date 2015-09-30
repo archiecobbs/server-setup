@@ -100,6 +100,9 @@ for FILE in `find private public -type f -exec sh -c 'file {} | grep -qw text' \
     mv "${FILE}"{.new,}
 done
 
+# Create emtpy intermediate file if none exists
+touch ssl/int.crt
+
 %install
 
 # Public web files
@@ -114,6 +117,12 @@ cp -a private/* %{buildroot}%{privateroot}/
 install -d -m 0755 %{buildroot}%{apconfdir}
 install -d -m 0755 %{buildroot}%{servincdir}
 install -m 0644 apache/%{name}.conf %{buildroot}%{apconfdir}/
+
+# SSL files
+install -d -m 0755 %{buildroot}%{ssldir}
+install -m 600 ssl/web.key %{buildroot}%{sslkeyfile}
+install ssl/web.crt %{buildroot}%{sslcrtfile}
+install ssl/int.crt %{buildroot}%{sslintfile}
 
 # logrotate files
 install -d -m 0755 %{buildroot}%{logrotdir}
@@ -156,6 +165,10 @@ systemctl try-restart apache2.service
 %{logrotdir}/*
 %{privateroot}
 %{publicroot}/*
+%dir %{ssldir}
+%{sslcrtfile}
+%{sslintfile}
+%attr(400,wwwrun,www) %{sslkeyfile}
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
 %attr(640,root,www) %config(noreplace) %{otppinfile}
 %attr(755,root,root) %{_bindir}/genkey
