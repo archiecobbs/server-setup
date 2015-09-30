@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="tomcat"
+  default="build"
+  basedir="."
+  xmlns:dellroad="urn:org.dellroad.ant"
+  xmlns:antcontrib="urn:net.sf.antcontrib">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+</project>
