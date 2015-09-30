@@ -17,12 +17,19 @@
       --define 'org_domain ${org.domain}'
       --define 'time_zone ${time.zone}'
     "/>
-    <property name="build.extra.rpm.flags" value=""/>
     <import file="${default.build.basedir}/build/macros.xml"/>
     <dellroad:gitrevision property="gitrev"/>
 
     <!-- Build RPMs -->
     <target name="build" depends="clean">
+        <antcontrib:if>
+            <not>
+                <isset property="build.extra.rpm.flags"/>
+            </not>
+            <antcontrib:then>
+                <property name="build.extra.rpm.flags" value=""/>
+            </antcontrib:then>
+        </antcontrib:if>
         <antcontrib:for list="${build.os.versions}" param="osver" trim="true">
             <sequential>
                 <dellroad:rpmbuild fresh="false" rpmflags="
