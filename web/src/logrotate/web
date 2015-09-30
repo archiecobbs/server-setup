@@ -1,0 +1,15 @@
+"@privatelog@" {
+    compress
+    dateext
+    maxage 365
+    rotate 99
+    size=+4096k
+    notifempty
+    missingok
+    sharedscripts
+    create 644 root root
+    postrotate
+     /usr/bin/systemctl reload apache2.service
+    endscript
+}
+
