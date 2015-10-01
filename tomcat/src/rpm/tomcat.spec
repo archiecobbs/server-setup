@@ -123,8 +123,10 @@ fi
 # Enable tomcat
 systemctl -q enable tomcat.service
 
-# Reload Apache
-systemctl try-restart apache2.service
+# Reload apache (if present)
+if systemctl is-active apache2.service >/dev/null; then
+    systemctl reload-or-try-restart apache2.service
+fi
 
 %files
 %attr(644,root,root) %{servincdir}/*

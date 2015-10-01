@@ -116,8 +116,10 @@ chgrp -R rpmrepo %{repo_dir}/*
 find %{repo_dir}/* -mindepth 2 -perm 444 -o -print0 | xargs -0r chmod g+w 
 find %{repo_dir}/* -type d -print0 | xargs -0r chmod g+s 
 
-# Reload apache
-systemctl reload-or-try-restart apache2.service
+# Reload apache (if present)
+if systemctl is-active apache2.service >/dev/null; then
+    systemctl reload-or-try-restart apache2.service
+fi
 
 %files
 %attr(2775,root,rpmrepo) %{repo_dir}/*
