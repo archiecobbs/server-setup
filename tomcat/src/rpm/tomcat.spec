@@ -7,6 +7,8 @@
 #   org_id
 #   org_name
 #   org_domain
+#   tomcat_port80_mappings
+#   tomcat_port443_mappings
 #
 
 %define pkgdir      %{_datadir}/%{name}
@@ -19,6 +21,9 @@
 %define tomcatconf  %{_sysconfdir}/tomcat/tomcat.conf
 %define tomcatsysd  %{_sbindir}/tomcat-sysd
 %define heappct     70
+
+# %{org_id}-web RPM config file include directory
+%define servincdir  %{pkgdir}/apache
 
 Name:               %{org_id}-tomcat
 Version:            %(echo %{gitrev} | tr - .)
@@ -38,6 +43,40 @@ Requires:           libtcnative-1-0
 
 %clean
 rm -rf %{buildroot}
+
+%build
+
+genproxy()
+{
+    MAPPINGS="$1"
+    echo ${MAPPINGS} | tr , '\n' | while read MAPPING; do
+        APATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\1|gp'`
+        TPATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\3|gp'`
+        if [ -z "${APATH}" -o -z "${TPATH}" ]; then
+            echo "*** Error: invalid mapping: ${MAPPING}" 1>&2
+            exit 1
+        fi
+        cat << xxEOFxx
+RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH}/\$1 [proxy,last]
+<Location "${APATH}/">
+    ProxyPassReverse             http://127.0.0.1:8080${TPATH}/
+    ProxyPassReverseCookiePath   ${TPATH} ${APATH}/
+</Location>
+xxEOFxx
+    done
+}
+
+# Generate include files
+printf '# Port 80 mappings for Tomcat\n' >> %{name}.port80.include
+genproxy '%{tomcat_port80_mappings}' >> %{name}.port80.include
+printf '# Port 443 mappings for Tomcat\n' > %{name}.port443.include
+genproxy '%{tomcat_port443_mappings}' >> %{name}.port443.include
+
+%install
+
+install -d %{buildroot}%{servincdir}
+install {,%{buildroot}%{servincdir}/}%{name}.port80.include
+install {,%{buildroot}%{servincdir}/}%{name}.port443.include
 
 %post
 
@@ -84,5 +123,8 @@ fi
 # Enable tomcat
 systemctl -q enable tomcat.service
 
-%files
+# Reload Apache
+systemctl try-restart apache2.service
 
+%files
+%attr(644,root,root) %{servincdir}/*
