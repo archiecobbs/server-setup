@@ -36,8 +36,7 @@
 %define otppinfile  %{otpdir}/pin-htpasswd.txt
 
 # modules
-%define apmodules   socache_shmcb proxy proxy_http rewrite
-%define opapmodules %{apmodules} auth_basic auth_digest authn_core authz_core authn_file authn_otp
+%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp
 
 Name:               %{org_id}-web
 Version:            %(echo %{gitrev} | tr - .)
