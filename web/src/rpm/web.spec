@@ -28,7 +28,6 @@
 %define logdir      /var/log/apache2
 %define logrotdir   %{_sysconfdir}/logrotate.d
 %define publiclog   %{logdir}/access_log
-%define privatelog  %{logdir}/access_log_private
 
 # auth stuff
 %define otpdir      %{pkgdir}/otp
@@ -76,7 +75,6 @@ subst()
         -e 's|@org_id@|%{org_id}|g' \
         -e 's|@otpfile@|%{otpfile}|g' \
         -e 's|@otppinfile@|%{otppinfile}|g' \
-        -e 's|@privatelog@|%{privatelog}|g' \
         -e 's|@privateroot@|%{privateroot}|g' \
         -e 's|@publiclog@|%{publiclog}|g' \
         -e 's|@publicroot@|%{publicroot}|g' \
