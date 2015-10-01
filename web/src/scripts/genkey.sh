@@ -73,6 +73,7 @@ if [ "${SETUP}" = 'true' ]; then
     fi
     touch "${KEYFILE}"
     chmod 600 "${KEYFILE}"
+    chown "${USERNAME}" "${KEYFILE}"
     sed -rn 's|([^[:space:]]+)[[:space:]]+'"${USERNAME}"'[[:space:]]+[^[:space:]]+[[:space:]]+([^[:space:]]+).*|\1 \2|gp' \
       < '@otpfile@' > "${KEYFILE}"
 fi
