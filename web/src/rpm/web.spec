@@ -15,7 +15,6 @@
 %define apconfig    %{_sysconfdir}/sysconfig/apache2
 %define apconfdir   %{apachedir}/conf.d
 %define publicroot  /srv/www
-%define privateroot /srv/www-private
 %define ssldir      %{pkgdir}/ssl
 %define sslcrtfile  %{ssldir}/ssl.crt
 %define sslkeyfile  %{ssldir}/ssl.key
@@ -75,7 +74,6 @@ subst()
         -e 's|@org_id@|%{org_id}|g' \
         -e 's|@otpfile@|%{otpfile}|g' \
         -e 's|@otppinfile@|%{otppinfile}|g' \
-        -e 's|@privateroot@|%{privateroot}|g' \
         -e 's|@publiclog@|%{publiclog}|g' \
         -e 's|@publicroot@|%{publicroot}|g' \
         -e 's|@serveremail@|%{serveremail}|g' \
@@ -115,8 +113,7 @@ install -d -m 0755 %{buildroot}%{publicroot}
 cp -a public/* %{buildroot}%{publicroot}/
 
 # Private web files
-install -d -m 0755 %{buildroot}%{privateroot}
-cp -a private/* %{buildroot}%{privateroot}/
+cp -a private %{buildroot}%{publicroot}/
 
 # Apache config file
 install -d -m 0755 %{buildroot}%{apconfdir}
@@ -163,7 +160,6 @@ systemctl try-restart apache2.service
 %dir %{servincdir}
 %dir %attr(700,wwwrun,www) %{otpdir}
 %dir %{pkgdir}
-%{privateroot}
 %{publicroot}/*
 %dir %{ssldir}
 %{sslcrtfile}
