@@ -10,7 +10,8 @@ SEDFLAG="r"
 if [ `uname -s` = 'Darwin' ]; then
     SEDFLAG="E"
 fi
-DOMAIN=`sed -${SEDFLAG}n 's/^web.hostname=([^[:space:]]+).*$/\1/gp' ../build.properties`
+DOMAIN=`sed -${SEDFLAG}n 's/^org.domain=([^[:space:]]+).*$/\1/gp' ../build.properties`
+CERTHOST=`sed -${SEDFLAG}n 's/^web.hostname=([^[:space:]]+).*$/\1/gp' ../build.properties`
 ORG_NAME=`sed -${SEDFLAG}n 's/^org.name=(.*)$/\1/gp' ../build.properties`
 EMAIL="support@${DOMAIN}"
 COUNTRY="US"
@@ -20,7 +21,7 @@ CITY="Los Angeles"
 # Usage message
 usage()
 {
-    echo "Usage: ${0} [options] [domain]" 1>&2
+    echo "Usage: ${0} [options] [hostname]" 1>&2
     echo "Options:" 1>&2
     echo "  --self-sign     Self-sign the newly created key" 1>&2
     echo "  --email addr    Specify email address (default \`${EMAIL}')" 1>&2
@@ -29,8 +30,8 @@ usage()
     echo "  --city name     Specify city/locality (default \`${CITY}')" 1>&2
     echo "  --help          Show this help info" 1>&2
     echo "This script generates a new private key and corresponding certificate sigining request." 1>&2
-    echo "Default domain if not specified is \`${DOMAIN}'" 1>&2
-    echo "Specify domain in the format \`*.example.com' for a wildcard certificate." 1>&2
+    echo "Specify hostname in the format \`*.example.com' for a wildcard certificate." 1>&2
+    echo "If not specified, the default hostname is \`${CERTHOST}'." 1>&2
 }
 
 # Parse flags passed in on the command line
@@ -76,7 +77,7 @@ while [ ${#} -gt 0 ]; do
 done
 case "${#}" in
     1)
-        DOMAIN="${1}"
+        CERTHOST="${1}"
         ;;
     0)
         ;;
@@ -101,7 +102,7 @@ prompt = no
 
 [ req_distinguished_name ]
 O = ${ORG_NAME}
-CN = ${DOMAIN}
+CN = ${CERTHOST}
 emailAddress = ${EMAIL}
 xxEOFxx
 if [ -n "${COUNTRY}" ]; then
