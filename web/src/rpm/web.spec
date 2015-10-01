@@ -26,7 +26,6 @@
 
 # log files
 %define logdir      /var/log/apache2
-%define logrotdir   %{_sysconfdir}/logrotate.d
 %define publiclog   %{logdir}/access_log
 
 # auth stuff
@@ -93,7 +92,6 @@ cc -o genotpurl -Wall -Werror sources/genotpurl.c
 # Substitute @variables@
 subst < scripts/genkey.sh > scripts/genkey
 subst < apache/web.conf > apache/%{name}.conf
-subst < logrotate/web > logrotate/%{name}
 for FILE in `find private public -type f -exec sh -c 'file {} | grep -qw text' \\; -print`; do
     subst < "${FILE}" > "${FILE}".new
     mv "${FILE}"{.new,}
@@ -130,10 +128,6 @@ install -m 600 ssl/web.key %{buildroot}%{sslkeyfile}
 install ssl/web.crt %{buildroot}%{sslcrtfile}
 install ssl/int.crt %{buildroot}%{sslintfile}
 
-# logrotate files
-install -d -m 0755 %{buildroot}%{logrotdir}
-install -m 0644 logrotate/%{name} %{buildroot}%{logrotdir}/
-
 # OTP directory, OTP users file, and encrypted PINs
 install -d -m 0755 %{buildroot}%{otpdir}
 install -m 0600 /dev/null %{buildroot}%{otpfile}
@@ -168,7 +162,6 @@ systemctl try-restart apache2.service
 %dir %{servincdir}
 %dir %attr(700,wwwrun,www) %{otpdir}
 %dir %{pkgdir}
-%{logrotdir}/*
 %{privateroot}
 %{publicroot}/*
 %dir %{ssldir}
