@@ -10,7 +10,7 @@ SEDFLAG="r"
 if [ `uname -s` = 'Darwin' ]; then
     SEDFLAG="E"
 fi
-DOMAIN=`sed -${SEDFLAG}n 's/^org.domain=([^[:space:]]+).*$/\1/gp' ../build.properties`
+DOMAIN=`sed -${SEDFLAG}n 's/^web.hostname=([^[:space:]]+).*$/\1/gp' ../build.properties`
 ORG_NAME=`sed -${SEDFLAG}n 's/^org.name=(.*)$/\1/gp' ../build.properties`
 EMAIL="support@${DOMAIN}"
 COUNTRY="US"
