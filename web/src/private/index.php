@@ -16,7 +16,7 @@
 
 <p>
 <ul>
-<li><a href="http://@mydomain@/">Public Web Site</a></li>
+<li><a href="http://@web_hostname@/">Public Web Site</a></li>
 </ul>
 </p>
 

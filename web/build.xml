@@ -8,5 +8,8 @@
 
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
+
+    <!-- Get canonical hostname -->
+    <property name="build.extra.rpm.flags" value="--define 'web_hostname ${web.hostname}'"/>
 </project>
 

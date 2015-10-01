@@ -6,6 +6,7 @@
 #   org_id
 #   org_name
 #   org_domain
+#   web_hostname
 #
 
 # apache stuff
@@ -84,7 +85,8 @@ subst()
         -e 's|@servincdir@|%{servincdir}|g' \
         -e 's|@sslcrtfile@|%{sslcrtfile}|g' \
         -e 's|@sslintfile@|%{sslintfile}|g' \
-        -e 's|@sslkeyfile@|%{sslkeyfile}|g'
+        -e 's|@sslkeyfile@|%{sslkeyfile}|g' \
+        -e 's|@web_hostname@|%{web_hostname}|g'
 }
 
 # Compile utilities
