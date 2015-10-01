@@ -43,6 +43,7 @@ RPM summary:
 To get started:
 
   * Customize settings by editing `build.properties`
+  * Install packages: git, ant, ant-contrib, apache-ivy, rpmbuild, apache2-utils, createrepo
   * Setup your RPM repository: `cd rpmrepo && ant install`
   * Build RPMs and install them to your repo: `cd foo && ant publish`
   * Add your RPM repo to machine(s) by installing the `ORGNAME-zypper-repos` RPM
