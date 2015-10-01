@@ -64,7 +64,7 @@
         <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
             <sequential>
                 <dellroad:rpmbuild fresh="false" specfile="../../build/${ant.project.name}-@{machine.class}.spec"
-                  rpmflags="${build.standard.rpm.flags} ${build.extra.rpm.flags}">
+                  rpmflags="${build.standard.rpm.flags}">
                     <source-preparation>
                         <zip destfile="build/rpm/SOURCES/${ant.project.name}-@{machine.class}.zip">
                             <zipfileset dir="src">

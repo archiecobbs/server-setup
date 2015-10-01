@@ -19,7 +19,6 @@
           --define 'repo_urlpath ${rpm.repo.urlpath}'
           --define 'repo_pass ${rpm.repo.password}'
           ${build.standard.rpm.flags}
-          ${build.extra.rpm.flags}
         ">
             <source-preparation>
                 <zip destfile="build/rpm/SOURCES/source.zip">
@@ -47,7 +46,6 @@
                   --define 'repo_urlpath ${rpm.repo.urlpath}'
                   --define 'repo_pass ${rpm.repo.password}'
                   ${build.standard.rpm.flags}
-                  ${build.extra.rpm.flags}
                   ">
                     <source-preparation>
                         <zip destfile="build/rpm/SOURCES/source.zip">
