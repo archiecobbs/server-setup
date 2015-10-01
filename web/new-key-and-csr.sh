@@ -120,7 +120,7 @@ cat "${CONFIG_FILE}"
 echo =============
 
 # Generate key and CSR
-if [ -e src/ssl/web.key ]; then
+if [ -e src/ssl/web.key -a -s src/ssl/web.key ]; then
     mv src/ssl/web.key{,.old}
 fi
 echo "Creating new private key and certificate signing request..." 1>&2
