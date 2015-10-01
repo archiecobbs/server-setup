@@ -104,6 +104,13 @@ done
 # Create emtpy intermediate file if none exists
 touch ssl/int.crt
 
+# Disable SSLCACertificateFile directive if not needed
+if ! [ -s ssl/int.crt ]; then
+    sed -r 's/^([[:space:]]*SSLCACertificateFile[[:space:]])/#\1/g' \
+      < apache/%{name}.conf > apache/%{name}.conf.new
+    mv apache/%{name}.conf{.new,}
+fi
+
 %install
 
 # Public web files
