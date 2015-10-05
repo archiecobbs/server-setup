@@ -50,6 +50,10 @@ genproxy()
 {
     MAPPINGS="$1"
     echo ${MAPPINGS} | tr , '\n' | while read MAPPING; do
+        MAPPING=`echo "${MAPPING}" | sed -r 's|^:||g'`
+        if [ -z "${MAPPING}" ]; then
+            continue
+        fi
         APATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\1|gp'`
         TPATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\3|gp'`
         if [ -z "${APATH}" -o -z "${TPATH}" ]; then
@@ -57,6 +61,7 @@ genproxy()
             exit 1
         fi
         cat << xxEOFxx
+RewriteRule ^${APATH}$ ${TPATH}/ [passthrough,last]
 RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH}/\$1 [proxy,last]
 <Location "${APATH}/">
     ProxyPassReverse             http://127.0.0.1:8080${TPATH}/

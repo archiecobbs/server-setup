@@ -11,6 +11,6 @@
 
     <!-- Get URL mappings -->
     <property name="build.extra.rpm.flags" value="
-      --define 'tomcat_port80_mappings ${tomcat.port80.mappings}'
-      --define 'tomcat_port443_mappings ${tomcat.port443.mappings}'"/>
+      --define 'tomcat_port80_mappings :${tomcat.port80.mappings}'
+      --define 'tomcat_port443_mappings :${tomcat.port443.mappings}'"/>
 </project>
