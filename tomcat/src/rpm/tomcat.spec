@@ -49,6 +49,7 @@ rm -rf %{buildroot}
 genproxy()
 {
     MAPPINGS="$1"
+    echo 'RewriteEngine on'
     echo ${MAPPINGS} | tr , '\n' | while read MAPPING; do
         MAPPING=`echo "${MAPPING}" | sed -r 's|^:||g'`
         if [ -z "${MAPPING}" ]; then
@@ -61,7 +62,7 @@ genproxy()
             exit 1
         fi
         cat << xxEOFxx
-RewriteRule ^${APATH}$ ${APATH}/ [passthrough,last]
+RewriteRule ^${APATH}$ ${APATH}/ [redirect=permanent,last]
 RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH}/\$1 [proxy,last]
 <Location "${APATH}/">
     ProxyPassReverse             http://127.0.0.1:8080${TPATH}/
