@@ -23,7 +23,7 @@
 %define heappct     70
 
 # %{org_id}-web RPM config file include directory
-%define servincdir  %{pkgdir}/apache
+%define servincdir  %{_datadir}/%{org_id}-web/apache
 
 Name:               %{org_id}-tomcat
 Version:            %(echo %{gitrev} | tr - .)
@@ -61,7 +61,7 @@ genproxy()
             exit 1
         fi
         cat << xxEOFxx
-RewriteRule ^${APATH}$ ${TPATH}/ [passthrough,last]
+RewriteRule ^${APATH}$ ${APATH}/ [passthrough,last]
 RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH}/\$1 [proxy,last]
 <Location "${APATH}/">
     ProxyPassReverse             http://127.0.0.1:8080${TPATH}/
