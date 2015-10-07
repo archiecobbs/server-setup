@@ -30,8 +30,8 @@
 
         <!-- Privilege machine classes must point to <machine-class> tags -->
         <xsd:keyref name="privilegeMachineClassRef" refer="machineClassKey">
-            <xsd:selector xpath="privilege/machine-class"/>
-            <xsd:field xpath="@name"/>
+            <xsd:selector xpath="privilege"/>
+            <xsd:field xpath="@machine-class"/>
         </xsd:keyref>
 
         <!-- Group privileges must point to <privilege> tags -->

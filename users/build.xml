@@ -52,7 +52,7 @@
         <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
             <sequential>
                 <xslt style="src/xsl/spec.xsl" in="src/xml/accounts.xml"
-                  out="build/${ant.project.name}-@{machine.class}.spec">
+                  out="build/${org.id}-${ant.project.name}-@{machine.class}.spec">
                     <param name="machine-classes" expression="${machine.classes}"/>
                     <param name="machine-class" expression="@{machine.class}"/>
                     <param name="this" expression="${ant.project.name}"/>
@@ -63,10 +63,10 @@
         <!-- Build RPMs -->
         <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
             <sequential>
-                <dellroad:rpmbuild fresh="false" specfile="../../build/${ant.project.name}-@{machine.class}.spec"
+                <dellroad:rpmbuild fresh="false" specfile="../../build/${org.id}-${ant.project.name}-@{machine.class}.spec"
                   rpmflags="${build.standard.rpm.flags}">
                     <source-preparation>
-                        <zip destfile="build/rpm/SOURCES/${ant.project.name}-@{machine.class}.zip">
+                        <zip destfile="build/rpm/SOURCES/source.zip">
                             <zipfileset dir="src">
                                 <include name="home/**"/>
                             </zipfileset>
@@ -80,7 +80,7 @@
         <delete dir="build/packages/RPMS/*"/>
         <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
             <sequential>
-                <delete file="build/${ant.project.name}-@{machine.class}.spec"/>
+                <delete file="build/${org.id}-${ant.project.name}-@{machine.class}.spec"/>
             </sequential>
         </antcontrib:for>
     </target>

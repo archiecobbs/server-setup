@@ -10,8 +10,6 @@
 
 <xsl:template match="accounts"># GENERATED FILE - DO NOT EDIT
 
-%define name                <xsl:value-of select="$this"/>
-
 # Which machine class am I?
 %define machine_class       <xsl:value-of select="$machine-class"/>
 
@@ -41,14 +39,14 @@
 %define nologin             %{_sbindir}/nologin
 %define maildir             %{_var}/spool/mail
 
-Name:                       %{name}-%{machine_class}
+Name:                       %{org_id}-users-%{machine_class}
 Version:                    %(echo %{gitrev} | tr - .)
 Release:                    1
 Summary:                    %{org_name} Users RPM for <xsl:value-of select="$machine-class"/> machines
 Group:                      System/Setup
 License:                    Commercial
 Distribution:               %{org_name}
-Source0:                    %{name}.zip
+Source0:                    source.zip
 BuildRoot:                  %{_tmppath}/%{name}-root
 Buildarch:                  noarch
 URL:                        http://%{org_domain}/
