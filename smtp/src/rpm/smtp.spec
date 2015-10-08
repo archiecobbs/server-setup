@@ -107,7 +107,19 @@ for DOMAIN in `xmlfind /routing/domain @name`; do
     for DEST in `xmlfind "/routing/domain[@name = '${DOMAIN}']/forward" "@name"`; do
         FIRST='true'
         printf '%%s:\t' "${DEST}" >> "${ALIASES}"
+
+        # Handle <dest user="...">
         for EMAIL in `xmlfind "/routing/users/user[@name = /routing/domain[@name = '${DOMAIN}']/forward[@name = '${DEST}']/dest/@user]" "@email"`; do
+            if [ "${FIRST}" = 'true' ]; then
+                FIRST='false'
+            else
+                printf ', ' >> "${ALIASES}"
+            fi
+            printf '%%s' "${EMAIL}" >> "${ALIASES}"
+        done
+
+        # Handle <dest email="...">
+        for EMAIL in `xmlfind "/routing/domain[@name = '${DOMAIN}']/forward[@name = '${DEST}']/dest/@email" "."`; do
             if [ "${FIRST}" = 'true' ]; then
                 FIRST='false'
             else

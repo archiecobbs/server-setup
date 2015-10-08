@@ -74,6 +74,15 @@
             <dest user="bob"/>
         </forward>
 
+        <!--
+            You can specify <dest> destinations as either a (pre-defined) user, or directly as an email address
+        -->
+        <forward name="real-estate-team">
+            <dest user="alice"/>
+            <dest email="fred@real-estate.example.com"/>
+            <dest email="joe@lawyer.example.com"/>
+        </forward>
+
     </domain>
 
     <!-- Add additional <domain> tags here... -->
