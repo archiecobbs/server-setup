@@ -1,5 +1,3 @@
-# $Id: bash.bashrc.local 2503 2013-04-09 20:42:58Z archie $
-
 # Files, directories, command line
 
 function b() {

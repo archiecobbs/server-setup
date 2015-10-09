@@ -1,5 +1,3 @@
-# $Id: repo-non-oss.repo.in 200 2013-04-10 16:49:13Z archie $
-
 [repo-non-oss]
 name=openSUSE Non-OSS (@susever@)
 type=yast2

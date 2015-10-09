@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: genkey.sh 201 2013-04-10 19:36:07Z archie $
 
 # Bail on error
 set -e

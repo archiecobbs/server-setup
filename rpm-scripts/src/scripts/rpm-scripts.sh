@@ -1,5 +1,4 @@
 #!/bin/sh
-# $Id: rpm-scripts.sh 1823 2015-05-20 19:12:19Z archie $
 
 #
 # This file contains some helpful functions for RPM scripts

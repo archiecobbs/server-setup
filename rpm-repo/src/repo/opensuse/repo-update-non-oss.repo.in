@@ -1,5 +1,3 @@
-# $Id: repo-update-non-oss.repo.in 200 2013-04-10 16:49:13Z archie $
-
 [repo-update-non-oss]
 name=openSUSE Update Non-OSS (@susever@)
 type=rpm-md
