@@ -12,7 +12,9 @@
 #   os_versions
 #
 
-%define pkgdir      %{_datadir}/%{name}
+%define pkgdir          %{_datadir}/%{name}
+%define apconfdir       %{_sysconfdir}/apache2/conf.d
+%define orgwebincdir    %{_datadir}/%{org_id}-web/apache
 
 Name:               %{org_id}-rpm-repo
 Version:            %(echo %{gitrev} | tr - .)
@@ -58,6 +60,7 @@ for OSVER in `echo %{os_versions} | tr , ' '`; do
 done
 
 # Generate htpasswd file
+touch htpasswd.txt
 if [ -n "${REPO_PASSWORD}" ]; then
     htpasswd2 -Bbn "${REPO_USERNAME}" "${REPO_PASSWORD}" | grep . > htpasswd.txt
 fi
@@ -73,7 +76,7 @@ subst()
       -e 's|@repourlpath@|%{repo_urlpath}|g'
 }
 subst < apache/org-rpmrepo-auth-provider.conf > %{org_id}-rpmrepo-auth-provider.conf
-subst < apache/org-rpmrepo.include > %{org_id}-rpmrepo.include
+subst < apache/org-rpmrepo.include > %{org_id}-rpmrepo.port443.include
 
 # Generate properties file
 printf 'os.versions=' '%{os_versions}' > repo.properties
@@ -97,13 +100,13 @@ done
 # Properties file
 install repo.properties %{buildroot}%{repo_dir}/
 
-# Apache files
+# Apache config files
 install -d %{buildroot}%{pkgdir}/apache
-if [ -f htpasswd.txt ]; then
-    install %{org_id}-rpmrepo-auth-provider.conf %{buildroot}%{pkgdir}/apache/
-    install htpasswd.txt %{buildroot}%{pkgdir}/apache/
-fi
-install %{org_id}-rpmrepo.include %{buildroot}%{pkgdir}/apache/
+install htpasswd.txt %{buildroot}%{pkgdir}/apache/
+install -d %{buildroot}%{apconfdir}
+install %{org_id}-rpmrepo-auth-provider.conf %{buildroot}%{apconfdir}/
+install -d %{buildroot}%{orgwebincdir}
+install %{org_id}-rpmrepo.port443.include %{buildroot}%{orgwebincdir}/
 
 %pre
 # Create repo group
@@ -129,4 +132,6 @@ fi
 %defattr(0644,root,root,0775)
 %dir %{repo_dir}
 %{pkgdir}
+%{orgwebincdir}/*
+%{apconfdir}/*
 

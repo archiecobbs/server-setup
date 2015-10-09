@@ -1,6 +1,6 @@
 
 # Map RPM repositories into Apache web space under @repourlpath@/
-Alias @repourlpath@/ "@repodir@"
+Alias @repourlpath@/ "@repodir@/"
 <Directory "@repodir@">
     Options                 FollowSymLinks Indexes IncludesNoExec
     AllowOverride           None
