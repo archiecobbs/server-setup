@@ -54,15 +54,15 @@
     </xsd:complexType>
 
     <xsd:complexType name="serverType">
-        <xsd:attribute name="hostname" type="xsd:string" use="required"/>
+        <xsd:attribute name="hostname" type="domainNameType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="localType">
-        <xsd:attribute name="domain" type="xsd:string" use="required"/>
+        <xsd:attribute name="domain" type="domainNameType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="rootType">
-        <xsd:attribute name="user" type="xsd:string" use="required"/>
+        <xsd:attribute name="user" type="userNameType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="usersType">
@@ -72,8 +72,8 @@
     </xsd:complexType>
 
     <xsd:complexType name="userType">
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="email" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="userNameType" use="required"/>
+        <xsd:attribute name="email" type="emailAddressType" use="required"/>
         <xsd:attribute name="password" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
@@ -81,19 +81,43 @@
         <xsd:sequence>
             <xsd:element name="forward" type="forwardType" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="domainNameType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="forwardType">
         <xsd:sequence>
             <xsd:element name="dest" type="destType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="name" type="emailBoxType" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="destType">
-        <xsd:attribute name="user" type="xsd:string" use="optional"/>
-        <xsd:attribute name="email" type="xsd:string" use="optional"/>
+        <xsd:attribute name="user" type="userNameType" use="optional"/>
+        <xsd:attribute name="email" type="emailAddressType" use="optional"/>
     </xsd:complexType>
+
+    <xsd:simpleType name="domainNameType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[^\.]+\..+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="userNameType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[-A-Za-z0-9._]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="emailAddressType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[^@]+@[^\.]+\..+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="emailBoxType">
+        <xsd:restriction base="xsd:token">
+            <xsd:pattern value="[^@]+"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
 </xsd:schema>
