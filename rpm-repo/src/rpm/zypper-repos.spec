@@ -52,7 +52,7 @@ find repo/%{osname} -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
 done
 
 # Create %{org_name} repo file
-genrepo < repo/org/org.repo.in > repofiles/%{org_id}.repo
+genrepo '%{osrel}' < repo/org/org.repo.in > repofiles/%{org_id}.repo
 
 %install
 

@@ -125,7 +125,7 @@ fi
 %attr(2775,root,rpmrepo) %{repo_dir}/*
 %verify(not owner) %{repo_dir}/*/repodata
 %attr(0644,root,rpmrepo) %{repo_dir}/*/*.repo
-%attr(0644,root,root) %{repo_dir}/*.properties
+%attr(0644,root,rpmrepo) %{repo_dir}/*.properties
 %defattr(0644,root,root,0775)
 %dir %{repo_dir}
 %{pkgdir}
