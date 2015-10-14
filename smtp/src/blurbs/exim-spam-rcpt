@@ -17,7 +17,7 @@
 
   drop
     message     = No you are not Me or OURS (HELO was $sender_helo_name and the subdomain is my domain ${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}})
-    condition   = ${if match_domain{${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}}}{+local_domains:+alias_domains:+relay_to_domains}{yes}{no}}
+    condition   = ${if match_domain{${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}}}{+local_domains:+relay_to_domains}{yes}{no}}
     delay       = 45s
 
   drop
