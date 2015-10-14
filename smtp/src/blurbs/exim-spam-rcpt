@@ -20,11 +20,11 @@
     condition   = ${if match_domain{${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}}}{+local_domains:+relay_to_domains}{yes}{no}}
     delay       = 45s
 
-  drop
-    message     = No you are not ME or OURS (HELO was $sender_helo_name and equal my interface hostname)
-    condition   = ${if !def:interface_address {no}{yes}}
-    condition   = ${if match_ip{$interface_address}{${lookup dnsdb{>: defer_never,a=$sender_helo_name}}}{yes}{no}}
-    delay       = 45s
+#  drop
+#    message     = No you are not ME or OURS (HELO was $sender_helo_name and equal my interface hostname)
+#    condition   = ${if !def:interface_address {no}{yes}}
+#    condition   = ${if match_ip{$interface_address}{${lookup dnsdb{>: defer_never,a=$sender_helo_name}}}{yes}{no}}
+#    delay       = 45s
 
   drop
     condition   = ${if match{$sender_helo_name}{\N^\[\N}{no}{yes}}
@@ -34,10 +34,6 @@
   drop
     message     = "REJECTED - Bad HELO - Host impersonating [$sender_helo_name]"
     condition   = ${if match{$sender_helo_name}{$primary_hostname}}
-
-  drop
-    message     = "REJECTED - Bad HELO - Host impersonating [$sender_helo_name]"
-    condition   = ${if match_domain{$sender_helo_name}{+all_mail_handled_locally}{true}{false}}
 
   drop
     condition   = ${if eq{[$interface_address]}{$sender_helo_name}}
