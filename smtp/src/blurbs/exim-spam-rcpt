@@ -12,7 +12,7 @@
 
   drop
     message     = No you are not ME or OURS (HELO was $sender_helo_name and equal my local domains or my domains relay)
-    condition   = ${if match_domain{$sender_helo_name}{+local_domains:+alias_domains:+relay_to_domains}{yes}{no}}
+    condition   = ${if match_domain{$sender_helo_name}{+local_domains:+relay_to_domains}{yes}{no}}
     delay       = 45s
 
   drop
