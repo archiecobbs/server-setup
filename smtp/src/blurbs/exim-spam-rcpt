@@ -1,0 +1,138 @@
+# From https://github.com/Exim/exim/wiki/AclHeloTricks
+
+  drop
+    condition   = ${if isip{$sender_helo_name}}
+    message     = Access denied - Invalid HELO name (See RFC2821 4.1.3)
+
+  drop
+    message     = Helo name contains a ip address (HELO was $sender_helo_name) and not is valid
+    condition   = ${if match{$sender_helo_name}{\N((\d{1,3}[.-]\d{1,3}[.-]\d{1,3}[.-]\d{1,3})|([0-9a-f]{8})|([0-9A-F]{8}))\N}{yes}{no}}
+    condition   = ${if match {${lookup dnsdb{>: defer_never,ptr=$sender_host_address}}}{$sender_helo_name}{no}{yes}}
+    delay       = 45s
+
+  drop
+    message     = No you are not ME or OURS (HELO was $sender_helo_name and equal my local domains or my domains relay)
+    condition   = ${if match_domain{$sender_helo_name}{+local_domains:+alias_domains:+relay_to_domains}{yes}{no}}
+    delay       = 45s
+
+  drop
+    message     = No you are not Me or OURS (HELO was $sender_helo_name and the subdomain is my domain ${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}})
+    condition   = ${if match_domain{${extract{-3}{.}{$sender_helo_name}}.${extract{-2}{.}{$sender_helo_name}}.${extract{-1}{.}{$sender_helo_name}}}{+local_domains:+alias_domains:+relay_to_domains}{yes}{no}}
+    delay       = 45s
+
+  drop
+    message     = No you are not ME or OURS (HELO was $sender_helo_name and equal my interface hostname)
+    condition   = ${if !def:interface_address {no}{yes}}
+    condition   = ${if match_ip{$interface_address}{${lookup dnsdb{>: defer_never,a=$sender_helo_name}}}{yes}{no}}
+    delay       = 45s
+
+  drop
+    condition   = ${if match{$sender_helo_name}{\N^\[\N}{no}{yes}}
+    condition   = ${if match{$sender_helo_name}{\N\.\N}{no}{yes}}
+    message     = Access denied - Invalid HELO name (See RFC2821 4.1.1.1)
+
+  drop
+    message     = "REJECTED - Bad HELO - Host impersonating [$sender_helo_name]"
+    condition   = ${if match{$sender_helo_name}{$primary_hostname}}
+
+  drop
+    message     = "REJECTED - Bad HELO - Host impersonating [$sender_helo_name]"
+    condition   = ${if match_domain{$sender_helo_name}{+all_mail_handled_locally}{true}{false}}
+
+  drop
+    condition   = ${if eq{[$interface_address]}{$sender_helo_name}}
+    message     = $interface_address is _my_ address
+
+# From https://github.com/Exim/exim/wiki/Verification
+
+  drop
+    message = REJECTED - Sender Verify Failed - error code \"$sender_verify_failure\"\n\n\
+                The return address you are using for this email message <$sender_address>\
+                does not seem to be a working account.
+    log_message = REJECTED - Sender Verify Failed - error code \"$sender_verify_failure\"
+#    !hosts = +no_verify
+    !verify = sender/callout=2m,defer_ok
+    condition = ${if eq{recipient}{$sender_verify_failure}}
+
+  drop
+      message     = REJECTED - Sender Verify Failed and Host $sender_host_address is Blacklisted in $dnslist_domain=$dnslist_value - $dnslist_text
+      log_message = REJECTED - Sender Verify Failed and Host $sender_host_address is Blacklisted in $dnslist_domain=$dnslist_value - $dnslist_text
+      dnslists = dnsbl.sorbs.net : dnsbl.njabl.org : relays.ordb.org : bl.spamcop.net : opm.blitzed.org
+      !verify = sender/callout=2m,defer_ok
+      !condition =  ${if eq{$sender_verify_failure}{}}
+
+  drop
+    message     = REJECTED - Sender Verify Failed and no RDNS
+    log_message = REJECTED - Sender Verify Failed and no RDNS
+    !verify = reverse_host_lookup
+    !verify = sender/callout=2m,defer_ok
+    !condition =  ${if eq{$sender_verify_failure}{}}
+
+# From https://github.com/Exim/exim/wiki/AclSmtpRcpt
+
+  drop
+      message = Legitimate bounces are never sent to more than one recipient.
+      senders = : postmaster@*
+      condition = ${if >{$recipients_count}{0}{true}{false}}
+
+# Drop if HELO is my hostname
+  drop
+    message   = "REJECTED - Bad HELO - Host impersonating [$sender_helo_name]"
+    condition = ${if match{$sender_helo_name}{$primary_hostname}}
+
+# Query the SPF information for the sender address domain, if any,
+# to see if the sending host is authorized to deliver its mail.
+# If not, reject the mail.
+#
+  deny
+    message     = [SPF] $sender_host_address is not allowed to send mail from $sender_address_domain
+    log_message = SPF check failed.
+    spf         = fail
+
+# Add a SPF-Received: header to the message
+  warn
+    message     = $spf_received
+
+# Check hostname
+  defer
+    message   = Broken Reverse DNS; no host name found for IP address $sender_host_address. Please contact your ISP.
+    condition = ${if and \
+      {\
+        {def:sender_host_address}\
+        {!def:sender_host_name}\
+      }\
+    {yes}{no}}
+
+# Check HELO after RCPT
+  defer
+    message   = Underscores are not allowed in hostnames. Please contact your ISP.
+    condition = ${if match\
+      {$sender_helo_name}\
+      {\N.*_.*\N}\
+    {yes}{no}}
+
+# Helo can't be localhost, *.local, *.localdomain or *.lan
+  defer
+    message   = HELO can't be $sender_helo_name. Please contact your ISP.
+    condition = ${if match\
+      {$sender_helo_name}\
+      {\N(localhost|\.local(domain)?|\.lan)$\N}\
+    {yes}{no}}
+
+# Helo should be FQDN
+  defer
+    hosts     = !+relay_from_hosts
+    message   = HELO should be Fully Qualified Domain Name. Please contact your ISP.
+    condition = ${if !match\
+      {$sender_helo_name}\
+      {\N.*[A-Za-z].*\..*[A-Za-z].*\N}\
+    {yes}{no}}
+
+# Domain can't be localhost or localdomain
+  defer
+    message   = $sender_address_domain is an incorrect domain. Please contact your ISP.
+    hosts     = ! : !+relay_from_hosts
+    condition = ${if match\
+      {$sender_address_domain}\
+      {\N(localhost|\.local(domain)?|\.lan)$\N}\
+    {yes}{no}}

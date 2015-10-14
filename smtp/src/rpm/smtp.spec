@@ -167,6 +167,9 @@ find tls -name '*.crt' -a -type f -print | while read FILE; do
     cat "${FILE}" >> %{buildroot}/%{pkgdir}/tls.crt
 done
 
+# Static blurbs
+install -m 0644 blurbs/exim-spam-rcpt %{buildroot}/%{pkgdir}/
+
 %post
 
 # Read scripts
@@ -174,10 +177,11 @@ done
 
 # Config exim
 sed_patch_file '%{eximconf}' -r 's/^(domainlist[[:space:]]+relay_to_domains[[:space:]]*=).*$/\1 '"`cat %{pkgdir}/exim-relay_to_domains`"'/g'
-cat %{pkgdir}/exim-main     | update_blurb '%{eximconf}' '^# qualify_domain ='      '%{name} main'
-cat %{pkgdir}/exim-auth     | update_blurb '%{eximconf}' '^begin authenticators'    '%{name} auth'
-cat %{pkgdir}/exim-routers  | update_blurb '%{eximconf}' '^begin routers'           '%{name} routers'
-cat %{pkgdir}/exim-hostname | update_blurb '%{eximconf}' '^# primary_hostname ='    '%{name} hostname'
+cat %{pkgdir}/exim-main         | update_blurb '%{eximconf}' '^# qualify_domain ='          '%{name} main'
+cat %{pkgdir}/exim-auth         | update_blurb '%{eximconf}' '^begin authenticators'        '%{name} auth'
+cat %{pkgdir}/exim-routers      | update_blurb '%{eximconf}' '^begin routers'               '%{name} routers'
+cat %{pkgdir}/exim-hostname     | update_blurb '%{eximconf}' '^# primary_hostname ='        '%{name} hostname'
+cat %{pkgdir}/exim-spam-rcpt    | update_blurb '%{eximconf}' 'require verify = recipient'   '%{name} spam-rcpt'
 
 # Enable exim and reload if running
 systemctl enable exim.service
