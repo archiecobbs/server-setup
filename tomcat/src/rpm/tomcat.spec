@@ -55,8 +55,8 @@ genproxy()
         if [ -z "${MAPPING}" ]; then
             continue
         fi
-        APATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\1|gp'`
-        TPATH=`echo "${MAPPING}" | sed -rn 's|^((/[^:/]+)+):((/[^:/]+)+)$|\3|gp'`
+        APATH=`echo "${MAPPING}" | sed -rn 's@^((/[^:/]+)+):((/[^:/]+)+|/)$@\1@gp'`
+        TPATH=`echo "${MAPPING}" | sed -rn 's@^((/[^:/]+)+):((/[^:/]+)+|/)$@\3@gp'`
         if [ -z "${APATH}" -o -z "${TPATH}" ]; then
             echo "*** Error: invalid mapping: ${MAPPING}" 1>&2
             exit 1
