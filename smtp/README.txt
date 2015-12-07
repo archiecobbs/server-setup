@@ -19,3 +19,6 @@ Note that besides setting up this router, Fred would also need to:
     o Add fred@company1.com and fred@company2.com to his GMail accounts
 
 This RPM supports multiple domains, aliases, and mailing lists.
+
+TODO:
+   - Add DKIM signatures; see http://mikepultz.com/2010/02/using-dkim-in-exim/
