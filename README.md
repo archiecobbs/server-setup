@@ -43,7 +43,7 @@ RPM summary:
 To get started:
 
   * Customize settings by editing `build.properties`
-  * Install these packages: git, ant, ant-contrib, ant-apache-xalan2, xalan2-j2, apache-ivy, rpmbuild, apache2-utils, createrepo
+  * Install these packages: git, ant, ant-contrib, ant-apache-xalan2, xalan2-j2, apache-ivy, rpm-build, apache2-utils, createrepo
   * Ensure your user has sudo rights
   * Setup your RPM repository: `cd rpm-repo && ant install`
   * Configure your users, adding yourself to the `rpmrepo` UNIX group: `cd users && vi src/xml/accounts.xml && ant install`
