@@ -45,6 +45,5 @@ To get started:
   * Customize settings by editing `build.properties`
   * Install these packages: `git ant ant-contrib ant-apache-xalan2 xalan-j2 apache-ivy rpm-build apache2-utils createrepo`
   * Configure your users: `vi users/src/xml/accounts.xml`
-  * Install RPM macros, repo, and users: `for i in rpm-{scripts,repo} users; do ( cd $i && ant install ); done`
-  * Build and publish RPMs to your repo: `cd rpm-scripts && ant publish`
-  * Add your RPM repo to other machine(s) by installing the `ORGNAME-zypper-repos` RPM
+  * Install RPM scripts and users: `for i in rpm-scripts users; do ( cd $i && ant install ); done`
+  * Pick and choose what other RPMs you'd like, then build, install and/or publish to RPM repo

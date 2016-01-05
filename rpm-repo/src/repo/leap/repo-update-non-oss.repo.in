@@ -1,0 +1,8 @@
+[repo-update-non-oss]
+name=openSUSE Leap Update Non-OSS (@susever@)
+type=rpm-md
+baseurl=http://download.opensuse.org/update/leap/@susever@/non-oss/
+gpgcheck=1
+enabled=1
+autorefresh=0
+keeppackages=0

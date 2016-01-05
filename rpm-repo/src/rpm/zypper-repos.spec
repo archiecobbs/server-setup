@@ -46,7 +46,14 @@ and %{org_name} zypper repositories.
 
 # Generate openSUSE repo files
 mkdir -p repofiles
-find repo/%{osname} -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
+if [ '%{osrel}' = 'tumbleweed' ]; then
+    REPO_TMPL_DIR='repo/%{osrel}'
+elif [ `echo '%{osrel} >= 42' | bc -l` = 1 ]; then
+    REPO_TMPL_DIR='repo/leap'
+else
+    REPO_TMPL_DIR='repo/%{osname}'
+fi
+find "${REPO_TMPL_DIR}" -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`
     genrepo '%{osrel}' < "${REPOFILE}" > repofiles/"${FNAME}"
 done

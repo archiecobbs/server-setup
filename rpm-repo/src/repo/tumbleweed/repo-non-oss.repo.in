@@ -1,0 +1,8 @@
+[repo-non-oss]
+name=openSUSE Tumbleweed Non-OSS
+type=yast2
+baseurl=http://download.opensuse.org/tumbleweed/repo/non-oss/
+gpgcheck=1
+enabled=1
+autorefresh=0
+keeppackages=0
