@@ -57,15 +57,19 @@ genproxy()
         fi
         APATH=`echo "${MAPPING}" | sed -rn 's@^((/[^:/]+)+):((/[^:/]+)+|/)$@\1@gp'`
         TPATH=`echo "${MAPPING}" | sed -rn 's@^((/[^:/]+)+):((/[^:/]+)+|/)$@\3@gp'`
+        TPATH2="${TPATH}"
+        if [ "${TPATH}" = '/' ]; then
+            TPATH2=""
+        fi
         if [ -z "${APATH}" -o -z "${TPATH}" ]; then
             echo "*** Error: invalid mapping: ${MAPPING}" 1>&2
             exit 1
         fi
         cat << xxEOFxx
 RewriteRule ^${APATH}$ ${APATH}/ [redirect=permanent,last]
-RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH}/\$1 [proxy,last]
+RewriteRule ^${APATH}/(.*)$ http://127.0.0.1:8080${TPATH2}/\$1 [proxy,last]
 <Location "${APATH}/">
-    ProxyPassReverse             http://127.0.0.1:8080${TPATH}/
+    ProxyPassReverse             http://127.0.0.1:8080${TPATH2}/
     ProxyPassReverseCookiePath   ${TPATH} ${APATH}/
 </Location>
 xxEOFxx
