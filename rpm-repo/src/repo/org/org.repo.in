@@ -1,7 +1,7 @@
 [@ORG_ID@]
 name=@ORG_NAME@ RPM repository (openSUSE @susever@)
 type=rpm-md
-baseurl=https://@URL_AUTH_PREFIX@@REPO_HOST@@REPO_URLPATH@/opensuse@susever@/
+baseurl=https://@URL_AUTH_PREFIX@@REPO_HOST@@REPO_URLPATH@/@susever@/
 gpgcheck=0
 enabled=1
 autorefresh=1
