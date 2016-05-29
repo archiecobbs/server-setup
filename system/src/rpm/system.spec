@@ -107,13 +107,13 @@ restrict default ignore
 restrict -6 default ignore
 
 server      time1.google.com
-restrict    time1.google.com kod nomodify notrap nopeer noquery
+restrict    time1.google.com nomodify notrap nopeer noquery
 server      time2.google.com
-restrict    time2.google.com kod nomodify notrap nopeer noquery
+restrict    time2.google.com nomodify notrap nopeer noquery
 server      time3.google.com
-restrict    time3.google.com kod nomodify notrap nopeer noquery
+restrict    time3.google.com nomodify notrap nopeer noquery
 server      time4.google.com
-restrict    time4.google.com kod nomodify notrap nopeer noquery
+restrict    time4.google.com nomodify notrap nopeer noquery
 
 restrict 127.0.0.1
 restrict -6 ::1
