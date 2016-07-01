@@ -23,7 +23,7 @@ BuildRoot:          %{_tmppath}/%{name}-root
 Buildarch:          noarch
 URL:                http://%{org_domain}/
 
-Requires:           openssh >= %{sshdver}
+Requires(post):     openssh >= %{sshdver}
 Requires(post):     %{org_id}-rpm-scripts
 
 %description
@@ -54,6 +54,12 @@ ChallengeResponseAuthentication no
 ClientAliveInterval 20
 ClientAliveCountMax 3
 xxEOFxx
+
+# Avoid conflicting parameters for 'UsePAM'
+sed_patch_file %{sshd_config} -r 's/^UsePAM yes/UsePAM no/g'
+
+# Ensure SSH service is enabled
+systemctl enable sshd.service
 
 %files
 %defattr(0644,root,root,0755)
