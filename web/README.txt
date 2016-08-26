@@ -45,13 +45,9 @@ To configure users and one-time passwords for /private access:
     o As root, add a user to the users.txt database and copy the user's OTP key
       into the user's ~/.genkey file where (only) they can read it:
 
-        $ genkey -u username --create
+        $ genkey -u username --setup
 
-      If users are authenticating using the "Google Authenticator" iPhone app, you
-      can generate an URL to text them that will auto-install the token into the
-      app by adding the `--url' flag to the above command.
-
-      For more info: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+      This will print out an URL that adds the token to the "Google Authenticator" app.
 
     o Now the user can run this command to generate a current one-time password:
 
