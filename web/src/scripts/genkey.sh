@@ -11,7 +11,7 @@ usage()
     echo "  -u          Specify username (default \"${USER}\")" 1>&2
     echo "  --create    Create entry in @otpfile@ (implies \`--setup')" 1>&2
     echo "  --setup     Initialize user's ~/.genkey file from @otpfile@" 1>&2
-    echo "  --url       Print out URL for OATH Token iPhone app" 1>&2
+    echo "  --url       Print out URL for Google Authenticator app" 1>&2
 }
 
 # Parse flags passed in on the command line
@@ -67,8 +67,8 @@ KEYFILE="/home/${USERNAME}/.genkey"
 # Setup mode?
 if [ "${SETUP}" = 'true' ]; then
     if [ "${CREATE}" = 'true' ]; then
-        KEY=`head -c 12 /dev/random | openssl sha1 -r | cut -c 1-24`
-        printf 'HOTP/T60 %s + %s\n' "${USERNAME}" "${KEY}" >> '@otpfile@'
+        KEY=`head -c 20 /dev/random | openssl sha1 -r | cut -c 1-20`
+        printf 'HOTP/T30 %s + %s\n' "${USERNAME}" "${KEY}" >> '@otpfile@'
     fi
     touch "${KEYFILE}"
     chmod 600 "${KEYFILE}"
@@ -94,18 +94,27 @@ fi
 
 # Get token interval
 TINTERVAL=`sed -rn 's%'"${PAT}"'%\3%gp' "${KEYFILE}"`
-if [ -z "${TINTERVAL}" ]; then
-    echo "genkey: can't handle event-based tokens" 1>&2
+if [ "${TINTERVAL}" != '30' ]; then
+    echo "genkey: can only handle time-based tokens with 30 second interval" 1>&2
     exit 1
 fi
 
 # Get number of digits
 TDIGITS=`sed -rn 's%'"${PAT}"'%\5%gp' "${KEYFILE}"`
 [ -z "${TDIGITS}" ] && TDIGITS="6"
+if [ "${TDIGITS}" != '6' ]; then
+    echo "genkey: can only handle six digit tokens" 1>&2
+    exit 1
+fi
 
 # Generate iPhone app URL if --url specified
 if [ "${GENURL}" = 'true' ]; then
-    exec genotpurl -k "${TKEY}" -d "${TDIGITS}" -i "${TINTERVAL}" -n '@org_name@'
+    exec genotpurl \
+        -I '@org_name@' \
+        -L "${USERNAME}@"'@web_hostname@' \
+        -k "${TKEY}" \
+        -d "${TDIGITS}" \
+        -i "${TINTERVAL}"
 fi
 
 # Generate token

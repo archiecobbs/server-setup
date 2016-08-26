@@ -86,7 +86,7 @@ subst()
 
 # Compile utilities
 cc -o setpin -Wall -Werror -DOTP_PIN_FILE='"%{otppinfile}"' sources/setpin.c
-cc -o genotpurl -Wall -Werror sources/genotpurl.c
+cc -o genotpurl -Wall -Werror -DDEFAULT_ISSUER='"%{org_name}"' sources/{base32,genotpurl}.c
 
 # Substitute @variables@
 subst < scripts/genkey.sh > scripts/genkey

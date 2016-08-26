@@ -47,11 +47,11 @@ To configure users and one-time passwords for /private access:
 
         $ genkey -u username --create
 
-      If users are authenticating using the "OATH Token" iPhone app, you can
-      generate an URL to text them that will auto-install the token into the
+      If users are authenticating using the "Google Authenticator" iPhone app, you
+      can generate an URL to text them that will auto-install the token into the
       app by adding the `--url' flag to the above command.
 
-      See https://github.com/archiecobbs/oathtoken for more info.
+      For more info: https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 
     o Now the user can run this command to generate a current one-time password:
 

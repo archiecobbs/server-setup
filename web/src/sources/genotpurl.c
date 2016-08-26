@@ -1,5 +1,10 @@
+/*
+ * Generates URLs for Google Authenticator.
+ */
+
 #include <sys/types.h>
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,36 +12,44 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <err.h>
+#include "base32.h"
 
-static void print_key(FILE *fp, const char *key, u_int len);
+static void urlencode(FILE *fp, const char *s);
+static void print_key(FILE *fp, const unsigned char *key, u_int len, int base32);
 static void usage(void);
 
 #define DEFAULT_COUNTER         0
-#define DEFAULT_KEYLEN          16
+#define DEFAULT_KEYLEN          10
 #define DEFAULT_NUM_DIGITS      6
-#define DEFAULT_INTERVAL        30
-#define DEFAULT_NAME            "Security Token"
+#define DEFAULT_PERIOD          30
 
 #define RANDOM_FILE             "/dev/urandom"
 
 int
 main(int argc, char **argv)
 {
-    const char *name = DEFAULT_NAME;
-    unsigned int interval = DEFAULT_INTERVAL;
+#ifdef DEFAULT_ISSUER
+    const char *issuer = DEFAULT_ISSUER;
+#else
+    const char *issuer = NULL;
+#endif
+#ifdef DEFAULT_LABEL
+    const char *label = DEFAULT_LABEL;
+#else
+    const char *label = NULL;
+#endif
+    unsigned int period = DEFAULT_PERIOD;
     unsigned int counter = DEFAULT_COUNTER;
     unsigned int num_digits = 6;
     int time_based = 1;
-    int lock_down = 1;
-    int hex_digits = 0;
-    char *key = NULL;
+    unsigned char *key = NULL;
     int keylen = DEFAULT_KEYLEN;
     FILE *fp;
     int i, j;
     unsigned int b;
 
     // Parse command line
-    while ((i = getopt(argc, argv, "c:d:Ii:k:Nn:x")) != -1) {
+    while ((i = getopt(argc, argv, "c:d:iI:k:L:p:")) != -1) {
         switch (i) {
         case 'c':
             counter = atoi(optarg);
@@ -44,11 +57,11 @@ main(int argc, char **argv)
         case 'd':
             num_digits = atoi(optarg);
             break;
-        case 'I':
+        case 'i':
             time_based = 0;
             break;
-        case 'i':
-            interval = atoi(optarg);
+        case 'I':
+            issuer = optarg;
             break;
         case 'k':
             if (strlen(optarg) % 2 != 0)
@@ -61,14 +74,11 @@ main(int argc, char **argv)
                 key[j] = b & 0xff;
             }
             break;
-        case 'n':
-            name = optarg;
+        case 'L':
+            label = optarg;
             break;
-        case 'N':
-            lock_down = 0;
-            break;
-        case 'x':
-            hex_digits = 1;
+        case 'p':
+            period = atoi(optarg);
             break;
         case '?':
         default:
@@ -86,7 +96,23 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    // Generate key
+    // Sanity check
+    if (time_based && counter != DEFAULT_COUNTER)
+        errx(1, "use of `-c' flag is invalid with time-based tokens");
+    if (!time_based && period != DEFAULT_PERIOD)
+        errx(1, "use of `-p' flag is invalid with time-based tokens");
+    if (label == NULL)
+        errx(1, "label required; use `-L' flag");
+    if (issuer == NULL)
+        errx(1, "issuer required; use `-I' flag");
+    if (strchr(issuer, ':') != NULL || strchr(label, ':') != NULL)
+        errx(1, "issuer and label must not contain the colon character");
+    if (time_based && period != DEFAULT_PERIOD)
+        errx(1, "google authenticator does not support time periods other than %d seconds", DEFAULT_PERIOD);
+    if (num_digits != DEFAULT_NUM_DIGITS)
+        errx(1, "google authenticator does not support number digits other than %d", DEFAULT_NUM_DIGITS);
+
+    // Generate key (if not supplied)
     if (key == NULL) {
         if ((key = malloc((keylen = DEFAULT_KEYLEN))) == NULL)
             err(1, "malloc");
@@ -95,33 +121,26 @@ main(int argc, char **argv)
         if (fread(key, 1, keylen, fp) != keylen)
             err(1, "%s", RANDOM_FILE);
         fclose(fp);
-        fprintf(stderr, "generated key: ");
-        print_key(stderr, key, keylen);
+        fprintf(stderr, "generated key (hex): ");
+        print_key(stderr, key, keylen, 0);
         fprintf(stderr, "\n");
     }
 
     // Output URL
-    printf("oathtoken:///addToken?name=");
-    for (i = 0; name[i] != '\0'; i++) {
-        if (isalnum(name[i]))
-            printf("%c", name[i]);
-        else
-            printf("%%%02x", name[i] & 0xff);
-    }
-    printf("&key=");
-    print_key(stdout, key, keylen);
-    if (time_based)
-        printf("&timeBased=true");
-    if (!time_based && counter != DEFAULT_COUNTER)
-        printf("&counter=%u", counter);
-    if (time_based && interval != DEFAULT_INTERVAL)
-        printf("&interval=%u", interval);
+    printf("otpauth://%s/", time_based ? "totp" : "hotp");
+    urlencode(stdout, issuer);
+    printf(":");
+    urlencode(stdout, label);
+    printf("?issuer=");
+    urlencode(stdout, issuer);
+    printf("&secret=");
+    print_key(stdout, key, keylen, 1);
     if (num_digits != DEFAULT_NUM_DIGITS)
-        printf("&numDigits=%u", num_digits);
-    if (hex_digits)
-        printf("&displayHex=true");
-    if (lock_down)
-        printf("&lockdown=true");
+        printf("&digits=%u", num_digits);
+    if (!time_based)
+        printf("&counter=%u", counter);
+    else if (period != DEFAULT_PERIOD)
+        printf("&period=%u", period);
     printf("\n");
 
     // Done
@@ -129,25 +148,70 @@ main(int argc, char **argv)
 }
 
 static void
-print_key(FILE *fp, const char *key, u_int len)
+urlencode(FILE *fp, const char *s)
 {
+    while (*s != '\0') {
+        if (isalnum(*s))
+            fprintf(fp, "%c", *s);
+        else
+            fprintf(fp, "%%%02x", *s & 0xff);
+        s++;
+    }
+}
+
+static void
+print_key(FILE *fp, const unsigned char *key, u_int len, int base32)
+{
+    unsigned char *buf;
+    u_int buflen;
     int i;
 
-    for (i = 0; i < len; i++)
-        fprintf(fp, "%02x", key[i] & 0xff);
+    if (base32) {
+        buflen = ((len + 4) / 5) * 8;
+        if ((buf = malloc(buflen + 1)) == NULL)
+            err(1, "malloc");
+        buf[buflen] = 0;
+        base32_encode(key, len, buf);
+        assert(buf[buflen] == 0 && (buflen == 0 || buf[buflen - 1] != 0));
+        for (i = 0; i < buflen; i++)
+            fputc(buf[i], fp);
+        free(buf);
+    } else {
+        for (i = 0; i < len; i++)
+            fprintf(fp, "%02x", key[i] & 0xff);
+    }
 }
 
 static void
 usage(void)
 {
-    fprintf(stderr, "Usage: genotpurl [-INx] [-n name] [-c counter] [-d num-digits] [-i interval] [-k key]\n");
+    fprintf(stderr, "Usage: genotpurl [-i]");
+#ifdef DEFAULT_ISSUER
+    fprintf(stderr, " [-I issuer]");
+#else
+    fprintf(stderr, " -I issuer");
+#endif
+#ifdef DEFAULT_LABEL
+    fprintf(stderr, " [-L label]");
+#else
+    fprintf(stderr, " -L label");
+#endif
+    fprintf(stderr, " [-c counter] [-d num-digits] [-p period] [-k key]\n");
     fprintf(stderr, "Options:\n");
     fprintf(stderr, "  -c\tInitial counter value (default %d)\n", DEFAULT_COUNTER);
     fprintf(stderr, "  -d\tNumber of digits (default %d)\n", DEFAULT_NUM_DIGITS);
-    fprintf(stderr, "  -I\tInterval-based instead of time-based\n");
-    fprintf(stderr, "  -i\tTime interval in seconds (default %d)\n", DEFAULT_INTERVAL);
-    fprintf(stderr, "  -k\tSpecify hex key (otherwise, auto-generate)\n");
-    fprintf(stderr, "  -N\tDon't lock down\n");
-    fprintf(stderr, "  -n\tSpecify name for token (default \"%s\")\n", DEFAULT_NAME);
-    fprintf(stderr, "  -x\tHex digits instead of decimal\n");
+    fprintf(stderr, "  -i\tInterval-based instead of time-based\n");
+#ifdef DEFAULT_ISSUER
+    fprintf(stderr, "  -I\tSpecify issuer (default \"%s\")\n", DEFAULT_ISSUER);
+#else
+    fprintf(stderr, "  -I\tSpecify issuer (REQUIRED)\n");
+#endif
+    fprintf(stderr, "  -p\tTime period in seconds (default %d)\n", DEFAULT_PERIOD);
+    fprintf(stderr, "  -k\tSpecify hex key (default auto-generate and report)\n");
+#ifdef DEFAULT_LABEL
+    fprintf(stderr, "  -L\tSpecify label (default \"%s\")\n", DEFAULT_LABEL);
+#else
+    fprintf(stderr, "  -L\tSpecify label (REQUIRED)\n");
+#endif
 }
+
