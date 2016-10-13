@@ -15,7 +15,7 @@ main(int argc, char **argv)
     struct passwd *pwd;
     const char *username;
     const char *pin = NULL;
-    uid_t uid;
+    const uid_t uid = getuid();
     int i;
 
     // Parse command line
@@ -45,11 +45,12 @@ main(int argc, char **argv)
     }
 
     // Validate user
-    if ((pwd = getpwnam(username)) == NULL)
-        errx(1, "user `%s' not found", username);
-    uid = getuid();
-    if (uid != pwd->pw_uid && uid != 0)
-        errx(1, "you must be root to change another user's PIN");
+    if (uid != 0) {
+        if ((pwd = getpwnam(username)) == NULL)
+            errx(1, "user `%s' not found", username);
+        if (uid != pwd->pw_uid)
+            errx(1, "you must be root to change another user's PIN");
+    }
     if (pin != NULL)
         execl("/usr/bin/htpasswd2", "htpasswd2", "-msb", OTP_PIN_FILE, username, pin, NULL);
     else
