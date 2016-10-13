@@ -78,6 +78,14 @@ function gp() {
     git pull ${1+"$@"}
 }
 
+function gl() {
+    git log ${1+"$@"}
+}
+
+function glf() {
+    git log --decorate=full --pretty --graph --all ${1+"$@"}
+}
+
 # SVN shortcuts
 
 function ci() {
