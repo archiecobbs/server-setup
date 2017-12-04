@@ -8,6 +8,5 @@ Alias @repourlpath@/ "@repodir@/"
     AuthName                "@org_name@ RPM Repository"
     AuthBasicProvider       @org_id@-rpmrepo
     Require                 valid-user
-    Satisfy                 all
 </Directory>
 
