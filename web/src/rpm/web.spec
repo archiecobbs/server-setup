@@ -18,7 +18,6 @@
 %define ssldir      %{pkgdir}/ssl
 %define sslcrtfile  %{ssldir}/ssl.crt
 %define sslkeyfile  %{ssldir}/ssl.key
-%define sslintfile  %{ssldir}/intermediate.crt
 %define mydomain    %{org_domain}
 %define serveremail support@%{mydomain}
 %define servincdir  %{pkgdir}/apache
@@ -79,7 +78,6 @@ subst()
         -e 's|@serveremail@|%{serveremail}|g' \
         -e 's|@servincdir@|%{servincdir}|g' \
         -e 's|@sslcrtfile@|%{sslcrtfile}|g' \
-        -e 's|@sslintfile@|%{sslintfile}|g' \
         -e 's|@sslkeyfile@|%{sslkeyfile}|g' \
         -e 's|@web_hostname@|%{web_hostname}|g'
 }
@@ -95,16 +93,6 @@ for FILE in `find private public -type f -exec sh -c 'file {} | grep -qw text' \
     subst < "${FILE}" > "${FILE}".new
     mv "${FILE}"{.new,}
 done
-
-# Create emtpy intermediate file if none exists
-touch ssl/int.crt
-
-# Disable SSLCACertificateFile directive if not needed
-if ! [ -s ssl/int.crt ]; then
-    sed -r 's/^([[:space:]]*SSLCACertificateFile[[:space:]])/#\1/g' \
-      < apache/%{name}.conf > apache/%{name}.conf.new
-    mv apache/%{name}.conf{.new,}
-fi
 
 %install
 
@@ -122,9 +110,8 @@ install -m 0644 apache/%{name}.conf %{buildroot}%{apconfdir}/
 
 # SSL files
 install -d -m 0755 %{buildroot}%{ssldir}
-install -m 600 ssl/web.key %{buildroot}%{sslkeyfile}
-install ssl/web.crt %{buildroot}%{sslcrtfile}
-install ssl/int.crt %{buildroot}%{sslintfile}
+install -m 600 certbot/live/%{web_hostname}/privkey.pem %{buildroot}%{sslkeyfile}
+install certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{sslcrtfile}
 
 # OTP directory, OTP users file, and encrypted PINs
 install -d -m 0755 %{buildroot}%{otpdir}
@@ -163,7 +150,6 @@ systemctl try-restart apache2.service
 %{publicroot}/*
 %dir %{ssldir}
 %{sslcrtfile}
-%{sslintfile}
 %attr(400,wwwrun,www) %{sslkeyfile}
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
 %attr(640,root,www) %config(noreplace) %{otppinfile}

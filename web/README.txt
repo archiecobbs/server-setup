@@ -29,16 +29,22 @@ The HTTP server is configured as follows:
 
         Addtional config in /usr/share/example-web/apache/*.port443.include
 
-You must supply the SSL key, certificate, and intermediate certificate:
+This is setup to use Let's Encrypt for obtaining an SSL Certificate.
 
-    src/ssl/web.key - SSL private key
-    src/ssl/web.crt - SSL certificate
-    src/ssl/int.crt - SSL intermediate certificate (empty file if none)
+To setup SSL:
 
-You can create a new key, CSR (certificate signing request), and optionally self-signed
-certificate using the included new-key-and-csr.sh script.
+    o Install the packages certbot and python-certbot-apache.
 
-Run `new-key-and-csr.sh --help' for details.
+    o Verify settings in ../build.properties are correct.
+
+    o Build and install this RPM normally. A fake SSL certificate will be installed,
+      but this will get the server up and running so you can use certbot's Apache
+      module to install a real one.
+
+    o Run "ant issue" to issue a new certificate, then rebuild and reinstall package.
+
+    o Set a reminder every 80 days to run "ant renew" to renew your certificate,
+      rebuild, and reinstall package.
 
 To configure users and one-time passwords for /private access:
 

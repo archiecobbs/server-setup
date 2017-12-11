@@ -9,7 +9,49 @@
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
 
-    <!-- Get canonical hostname -->
+    <!-- Pass web server hostname to RPM build -->
     <property name="build.extra.rpm.flags" value="--define 'web_hostname ${web.hostname}'"/>
-</project>
 
+    <!-- Acquire new SSL cert -->
+    <target name="issue" unless="issue.completed">
+
+        <!-- Acquire new cert -->
+        <echo message="Acquiring new SSL certificate..."/>
+        <exec executable="sudo" logError="true" failonerror="true">
+            <arg value="bash"/>
+            <arg value="-c"/>
+            <arg value="
+                certbot certonly
+                  --apache
+                  --agree-tos
+                  --non-interactive
+                  --email ${org.contact}
+                  --config ${basedir}/src/certbot/cli.ini
+                  --config-dir ${basedir}/src/certbot
+                  -d ${web.hostname}
+            "/>
+        </exec>
+        <echo message="Done."/>
+        <property name="issue.completed" value="true"/>
+    </target>
+
+    <!-- Renew SSL cert -->
+    <target name="renew" unless="renew.completed">
+        <echo message="Renewing SSL certificate for ${web.hostname}..."/>
+        <exec executable="sudo" logError="true" failonerror="true">
+            <arg value="bash"/>
+            <arg value="-c"/>
+            <arg value="
+                certbot renew
+                  --apache
+                  --agree-tos
+                  --non-interactive
+                  --email ${org.contact}
+                  --config ${basedir}/src/certbot/cli.ini
+                  --config-dir ${basedir}/src/certbot
+            "/>
+        </exec>
+        <property name="renew.completed" value="true"/>
+    </target>
+
+</project>
