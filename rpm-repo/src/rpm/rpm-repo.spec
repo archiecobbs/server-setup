@@ -92,9 +92,9 @@ printf '\n' >> repo.properties
 # Create repository directory layout
 install -d %{buildroot}%{repo_dir}
 for OSVER in `echo %{os_versions} | tr , ' '`; do
-    install -d -m 0755 %{buildroot}%{repo_dir}/"${OSVER}"
-    install -d -m 0755 %{buildroot}%{repo_dir}/"${OSVER}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
-    install -m 0644 repo/"${OSVER}"/%{org_id}.repo %{buildroot}%{repo_dir}/"${OSVER}"/
+    install -d -m 0755 %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"
+    install -d -m 0755 %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
+    install -m 0644 repo/"${OSVER}"/%{org_id}.repo %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"/
 done
 
 # Properties file
