@@ -38,8 +38,6 @@ Requires:           rpm
 Requires:           rpm-build
 Requires:           saxon9-scripts
 Requires:           strace
-Requires:           subversion
-Requires:           subversion-tools
 Requires:           xalan-j2
 Requires:           xerces-j2
 Requires:           xmlstarlet
