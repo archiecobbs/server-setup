@@ -40,6 +40,7 @@ Requires:           cpio
 Requires:           diffutils
 Requires:           ethtool
 Requires:           expat
+Requires:           iputils
 Requires:           java-ca-certificates
 Requires:           lsof
 Requires:           mailx
@@ -51,6 +52,7 @@ Requires:           openssl
 Requires:           patch
 Requires:           patchutils
 Requires:           procinfo
+Requires:           psmisc
 Requires:           ptools
 Requires:           rpm
 Requires:           screen
