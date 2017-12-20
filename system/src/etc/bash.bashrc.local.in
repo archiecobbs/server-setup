@@ -205,6 +205,7 @@ _PROMPT_SITE_WEIGHT=""
 _PROMPT_SITE_COLOR=""
 _PROMPT_USER_RESET=""
 _PROMPT_SITE_RESET=""
+_PROMPT_TAB_TITLE=`cat /etc/hostname | tr -d \\\\n | ( echo -ne '\e]1;'; cat; echo -ne '\a')`
 
 # Get color sequences for prompt
 if [ `id -u` -eq 0 ]; then
@@ -231,7 +232,7 @@ fi
 
 # Set prompt
 if ! shopt -q restricted_shell; then
-    PS1='[\['$(${_PROMPT_USER_WEIGHT})$(${_PROMPT_USER_COLOR})'\]\u\['$(${_PROMPT_USER_RESET})'\]@'${_PROMPT_HOST}'\['$(${_PROMPT_SITE_WEIGHT})$(${_PROMPT_SITE_COLOR})'\]'${_PROMPT_SITE}'\['$(${_PROMPT_SITE_RESET})'\]'${_GIT_PROMPT_STUFF}'] \! '
+    PS1="${_PROMPT_TAB_TITLE}"'[\['$(${_PROMPT_USER_WEIGHT})$(${_PROMPT_USER_COLOR})'\]\u\['$(${_PROMPT_USER_RESET})'\]@'${_PROMPT_HOST}'\['$(${_PROMPT_SITE_WEIGHT})$(${_PROMPT_SITE_COLOR})'\]'${_PROMPT_SITE}'\['$(${_PROMPT_SITE_RESET})'\]'${_GIT_PROMPT_STUFF}'] \! '
 fi
 
 unset _PROMPT_USER_WEIGHT
@@ -242,6 +243,7 @@ unset _PROMPT_HOST
 unset _PROMPT_SITE
 unset _PROMPT_USER_RESET
 unset _PROMPT_SITE_RESET
+unset _PROMPT_TAB_TITLE
 unset _GIT_PROMPT_STUFF
 
 # Configure history
