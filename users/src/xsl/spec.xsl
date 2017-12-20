@@ -81,7 +81,11 @@ install -d -m 755 %{buildroot}%{homedir}
 <xsl:for-each select="group[privilege/@name = //privilege[@machine-class=$machine-class and (nonShellAccount or restrictedShellAccount or shellAccount)]/@name]">
     <xsl:variable name="groupname" select="@groupname"/>
     <xsl:for-each select="//user[group/@groupname = $groupname]">
-cp -a home/<xsl:value-of select="@username"/> %{buildroot}%{homedir}/
+if test -d home/<xsl:value-of select="@username"/>; then
+    cp -a home/<xsl:value-of select="@username"/> %{buildroot}%{homedir}/
+else
+    install -d -m 755 %{buildroot}%{homedir}/<xsl:value-of select="@username"/>
+fi
     </xsl:for-each>
 </xsl:for-each>
 
