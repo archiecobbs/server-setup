@@ -11,8 +11,7 @@
 
     <!-- Read machine classes -->
     <target name="machine.classes" unless="machine.classes">
-        <xslt style="src/xsl/machine-classes.xsl" in="src/xml/accounts.xml"
-          out="build/machine-classes.properties"/>
+        <xslt style="src/xsl/machine-classes.xsl" in="src/xml/accounts.xml" out="build/machine-classes.properties"/>
         <property file="build/machine-classes.properties"/>
     </target>
 

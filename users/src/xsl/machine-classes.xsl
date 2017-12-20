@@ -8,7 +8,8 @@
         <xsl:text># GENERATED FILE - DO NOT EDIT&#10;&#10;</xsl:text>
         <xsl:text>machine.classes=</xsl:text>
         <xsl:for-each select="accounts/machine-class">
-            <xsl:value-of select="concat(@name, ' ')"/>
+            <xsl:if test="position() &gt; 1">,</xsl:if>
+            <xsl:value-of select="@name"/>
         </xsl:for-each>
         <xsl:text>&#10;</xsl:text>
     </xsl:template>
