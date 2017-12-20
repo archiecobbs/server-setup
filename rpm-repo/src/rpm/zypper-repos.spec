@@ -55,11 +55,11 @@ else
 fi
 find "${REPO_TMPL_DIR}" -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`
-    genrepo '%{osrel}' < "${REPOFILE}" > repofiles/"${FNAME}"
+    genrepo '%{osname}' '%{osrel}' < "${REPOFILE}" > repofiles/"${FNAME}"
 done
 
 # Create %{org_name} repo file
-genrepo '%{osrel}' < repo/org/org.repo.in > repofiles/%{org_id}.repo
+genrepo '%{osname}' '%{osrel}' < repo/org/org.repo.in > repofiles/%{org_id}.repo
 
 %install
 

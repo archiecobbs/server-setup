@@ -56,7 +56,7 @@ It defines the RPM repository directory layout under %{repo_dir}.
 # Create organization repo files
 for OSVER in `echo %{os_versions} | tr , ' '`; do
     mkdir -p repo/"${OSVER}"
-    genrepo "${OSVER}" < repo/org/org.repo.in > repo/"${OSVER}"/%{org_id}.repo
+    genrepo '%{os_name}' "${OSVER}" < repo/org/org.repo.in > repo/"${OSVER}"/%{org_id}.repo
 done
 
 # Generate htpasswd file
