@@ -54,9 +54,9 @@ It defines the RPM repository directory layout under %{repo_dir}.
 . scripts/repo-gen.sh '%{org_name}' '%{org_id}' '%{repo_host}' '%{repo_urlpath}' '%{?repo_pass}'
 
 # Create organization repo files
-for OSVER in `echo %{os_versions} | tr , ' '`; do
-    mkdir -p repo/"${OSVER}"
-    genrepo '%{os_name}' "${OSVER}" < repo/org/org.repo.in > repo/"${OSVER}"/%{org_id}.repo
+for OS_REL in `echo %{os_versions} | tr , ' '`; do
+    mkdir -p repo/"${OS_REL}"
+    genrepo '%{os_name}' "${OS_REL}" < repo/org/org.repo.in > repo/"${OS_REL}"/%{org_id}.repo
 done
 
 # Generate htpasswd file
@@ -81,8 +81,8 @@ subst < apache/org-rpmrepo.include > %{org_id}-rpmrepo.port443.include
 # Generate properties file
 printf 'os.versions=' '%{os_versions}' > repo.properties
 COMMA=""
-for OSVER in `echo %{os_versions} | tr , ' '`; do
-    printf '%s%s%s' "${COMMA}" '%{os_name}' "${OSVER}" >> repo.properties
+for OS_REL in `echo %{os_versions} | tr , ' '`; do
+    printf '%s%s%s' "${COMMA}" '%{os_name}' "${OS_REL}" >> repo.properties
     COMMA=","
 done
 printf '\n' >> repo.properties
@@ -91,10 +91,10 @@ printf '\n' >> repo.properties
 
 # Create repository directory layout
 install -d %{buildroot}%{repo_dir}
-for OSVER in `echo %{os_versions} | tr , ' '`; do
-    install -d -m 0755 %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"
-    install -d -m 0755 %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
-    install -m 0644 repo/"${OSVER}"/%{org_id}.repo %{buildroot}%{repo_dir}/'%{os_name}'"${OSVER}"/
+for OS_REL in `echo %{os_versions} | tr , ' '`; do
+    install -d -m 0755 %{buildroot}%{repo_dir}/"${OS_REL}"
+    install -d -m 0755 %{buildroot}%{repo_dir}/"${OS_REL}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
+    install -m 0644 repo/"${OS_REL}"/%{org_id}.repo %{buildroot}%{repo_dir}/"${OS_REL}"/
 done
 
 # Properties file

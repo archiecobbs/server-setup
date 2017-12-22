@@ -1,7 +1,7 @@
 [repo-non-oss]
-name=openSUSE Leap Non-OSS (@susever@)
+name=openSUSE Leap Non-OSS (@osrel@)
 type=yast2
-baseurl=http://download.opensuse.org/distribution/leap/@susever@/repo/non-oss/
+baseurl=http://download.opensuse.org/distribution/leap/@osrel@/repo/non-oss/
 gpgcheck=1
 enabled=1
 autorefresh=0

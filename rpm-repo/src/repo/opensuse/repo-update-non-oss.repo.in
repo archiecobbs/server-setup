@@ -1,7 +1,7 @@
 [repo-update-non-oss]
-name=openSUSE Update Non-OSS (@susever@)
+name=openSUSE Update Non-OSS (@osrel@)
 type=rpm-md
-baseurl=http://download.opensuse.org/update/@susever@-non-oss/
+baseurl=http://download.opensuse.org/update/@osrel@-non-oss/
 gpgcheck=1
 enabled=1
 autorefresh=0
