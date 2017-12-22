@@ -751,8 +751,8 @@
                 "/>
             </exec>
 
-            <!-- Combine O/S name and release -->
-            <property name="_rpmdist.osver.@{osname}@{osrel}" value="${_rpmdist.osname.@{osname}}${_rpmdist.osrel.@{osrel}}"/>
+            <!-- Derive repo directory name -->
+            <property name="_rpmdist.osver.@{osname}@{osrel}" value="${_rpmdist.osrel.@{osrel}}"/>
 
             <!-- Optionally remove older versions -->
             <antcontrib:if>
