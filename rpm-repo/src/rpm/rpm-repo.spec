@@ -82,7 +82,7 @@ subst < apache/org-rpmrepo.include > %{org_id}-rpmrepo.port443.include
 printf 'os.versions=' '%{os_versions}' > repo.properties
 COMMA=""
 for OS_REL in `echo %{os_versions} | tr , ' '`; do
-    printf '%s%s%s' "${COMMA}" '%{os_name}' "${OS_REL}" >> repo.properties
+    printf '%s%s' "${COMMA}" "${OS_REL}" >> repo.properties
     COMMA=","
 done
 printf '\n' >> repo.properties
