@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -26,7 +26,7 @@
 %define servincdir  %{_datadir}/%{org_id}-web/apache
 
 Name:               %{org_id}-tomcat
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Setup for Tomcat (%{osname}%{osrel})
 License:            Apache-2.0

@@ -10,7 +10,6 @@
     <dirname property="default.build.basedir" file="${ant.file.default-build}"/>
     <property file="${default.build.basedir}/build.properties"/>
     <property name="build.standard.rpm.flags" value="
-      --define 'gitrev ${gitrev}'
       --define 'osname ${build.os.name}'
       --define 'org_id ${org.id}'
       --define 'org_name ${org.name}'
@@ -18,7 +17,6 @@
       --define 'time_zone ${time.zone}'
     "/>
     <import file="${default.build.basedir}/build/macros.xml"/>
-    <dellroad:gitrevision property="gitrev"/>
 
     <!-- Build RPMs -->
     <target name="build" depends="clean">

@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -12,7 +12,7 @@
 %define antconf     %{_sysconfdir}/ant.conf
 
 Name:               %{org_id}-developer
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Developer Setup (%{osname}%{osrel})
 Group:              Development/Tools

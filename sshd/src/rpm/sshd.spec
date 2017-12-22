@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -13,7 +13,7 @@
 %define sshdver     6.6p1
 
 Name:               %{org_id}-sshd
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} sshd(8) system configuration (%{osname}%{osrel})
 Group:              System/Setup

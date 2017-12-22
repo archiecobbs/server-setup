@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   org_id
 #   org_name
 #   org_domain
@@ -17,7 +17,7 @@
 %define orgwebincdir    %{_datadir}/%{org_id}-web/apache
 
 Name:               %{org_id}-rpm-repo
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1
 Summary:            %{org_name} RPM Repository Setup
 Group:              System/Setup

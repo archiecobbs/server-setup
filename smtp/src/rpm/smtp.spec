@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -16,7 +16,7 @@
 %define eximver     4.80
 
 Name:               %{org_id}-smtp
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Setup for SMTP Routing (%{osname}%{osrel})
 Group:              System/Setup

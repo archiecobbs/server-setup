@@ -40,7 +40,7 @@
 %define maildir             %{_var}/spool/mail
 
 Name:                       %{org_id}-users-%{machine_class}
-Version:                    %(echo %{gitrev} | tr - .)
+Version:                    %(echo %{scm_revision} | tr - .)
 Release:                    1
 Summary:                    %{org_name} Users RPM for <xsl:value-of select="$machine-class"/> machines
 Group:                      System/Setup

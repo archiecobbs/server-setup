@@ -695,7 +695,6 @@
             <source-preparation/>
             <basename property="spec.@{specfile}.name" file="@{specfile}"/>
             <rpm topdir="build/rpm" specfile="${spec.@{specfile}.name}" command="@{buildflag}
-              --define 'svn_revision ${scm_revision}'
               --define 'scm_revision ${scm_revision}'
               @{rpmflags}" rpmBuildCommand="rpmbuild"
               failOnError="true"/>

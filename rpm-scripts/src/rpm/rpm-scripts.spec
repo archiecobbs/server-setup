@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -12,7 +12,7 @@
 %define pkgdir      %{_datadir}/%{name}
 
 Name:               %{org_id}-rpm-scripts
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} RPM scripts
 Group:              Development/Tools

@@ -1,7 +1,7 @@
 
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -14,7 +14,7 @@
 %define zyppdir     %{_sysconfdir}/zypp/repos.d 
 
 Name:               %{org_id}-zypper-repos
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} zypper repositories for %{osname} %{osrel}
 Group:              System/Setup

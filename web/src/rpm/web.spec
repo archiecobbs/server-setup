@@ -1,6 +1,6 @@
 #
 # Requires:
-#   gitrev
+#   scm_revision
 #   osname
 #   osrel
 #   org_id
@@ -35,7 +35,7 @@
 %define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp
 
 Name:               %{org_id}-web
-Version:            %(echo %{gitrev} | tr - .)
+Version:            %(echo %{scm_revision} | tr - .)
 Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Setup for Apache (%{osname}%{osrel})
 Group:              System/Setup
