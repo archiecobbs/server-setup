@@ -770,7 +770,7 @@
                             for FILE in `find dist/RPMS -type f -name '@{pattern}' -print`; do
                                 NAME=`rpm -qp --queryformat='%{name}\n' &quot;$${FILE}&quot;`;
                                 (
-                                    if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                                    if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
                                         find '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'
                                             -type f -name &quot;$${NAME}-*.rpm&quot; -print0
                                           | xargs -n 1 -0 -I@ sh -c
@@ -803,7 +803,7 @@
                         find * -type f -name '@{pattern}' -print | grep -vE '^.*\.${_rpmdist.osname.@{osname}}[0-9][0-9.]*\..*$$';
                         find * -type f -name '@{pattern}' -print | grep -E '^.*\.${_rpmdist.oslabel.@{osname}@{osrel}}\..*$$';
                     ) | (
-                        if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                        if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
                             echo 'Publishing RPMs to @{repodir}/${_rpmdist.osver.@{osname}@{osrel}}:';
                             umask 002;
                             cpio --quiet -pmudvl '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}' 2&gt;&amp;1
@@ -827,7 +827,7 @@
                 <arg value="-c"/>
                 <arg value="
                     set -e;
-                    if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                    if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
                         echo 'Regenerating repository meta-data...';
                         umask 002;
                         createrepo -q -c '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/cache'
@@ -846,7 +846,7 @@
                 <arg value="-c"/>
                 <arg value="
                     set -e;
-                    if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                    if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
                         chmod g+w '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/repodata';
                     else
                         ssh '@{repohost}' chmod g+w \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/repodata'\';
