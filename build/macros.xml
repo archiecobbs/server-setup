@@ -751,8 +751,11 @@
                 "/>
             </exec>
 
-            <!-- Derive repo directory name -->
+            <!-- Derive repo directory name (includes O/S version but not name) -->
             <property name="_rpmdist.osver.@{osname}@{osrel}" value="${_rpmdist.osrel.@{osrel}}"/>
+
+            <!-- Derive osname + osversion label (includes both O/S name and version) -->
+            <property name="_rpmdist.oslabel.@{osname}@{osrel}" value="${_rpmdist.osname.@{osname}}${_rpmdist.osrel.@{osrel}}"/>
 
             <!-- Optionally remove older versions -->
             <antcontrib:if>
@@ -798,7 +801,7 @@
                     (
                         set +e;
                         find * -type f -name '@{pattern}' -print | grep -vE '^.*\.${_rpmdist.osname.@{osname}}[0-9][0-9.]*\..*$$';
-                        find * -type f -name '@{pattern}' -print | grep -E '^.*\.${_rpmdist.osver.@{osname}@{osrel}}\..*$$';
+                        find * -type f -name '@{pattern}' -print | grep -E '^.*\.${_rpmdist.oslabel.@{osname}@{osrel}}\..*$$';
                     ) | (
                         if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
                             echo 'Publishing RPMs to @{repodir}/${_rpmdist.osver.@{osname}@{osrel}}:';
