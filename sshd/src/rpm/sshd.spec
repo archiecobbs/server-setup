@@ -10,7 +10,7 @@
 #
 
 %define sshd_config %{_sysconfdir}/ssh/sshd_config
-%define sshdver     6.6p1
+%define sshdver     7.2p2
 
 Name:               %{org_id}-sshd
 Version:            %(echo %{scm_revision} | tr - .)
@@ -55,8 +55,11 @@ ClientAliveInterval 20
 ClientAliveCountMax 3
 xxEOFxx
 
-# Avoid conflicting parameters for 'UsePAM'
-sed_patch_file %{sshd_config} -r 's/^UsePAM yes/UsePAM no/g'
+# Avoid conflicting parameters for 'UsePAM', etc.
+sed_patch_file %{sshd_config} -r \
+  -e 's/^(UsePAM[[:space:]]+)yes/\1no/g' \
+  -e 's/^(PermitRootLogin[[:space:]]+)yes/\1no/g' \
+  -e 's/^(PasswordAuthentication[[:space:]]+)yes/\1no/g'
 
 # Ensure SSH service is enabled
 systemctl enable sshd.service

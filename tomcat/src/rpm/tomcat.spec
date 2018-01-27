@@ -13,7 +13,7 @@
 
 %define pkgdir      %{_datadir}/%{name}
 
-%define tomcatver   7.0.55
+%define tomcatver   8.0.43
 
 %define pkgdir      %{_datadir}/%{name}
 %define serverxml   %{_sysconfdir}/tomcat/server.xml

@@ -230,8 +230,8 @@ do_if_running()
     if [ -z "${CHECKOP}" ]; then
         CHECKOP="status"
     fi
-    if /etc/init.d/"${SERVICE}" "${CHECKOP}" >/dev/null 2>&1; then
-        /etc/init.d/"${SERVICE}" "${OPERATION}"
+    if systemctl -q is-active "${SERVICE}"; then
+        systemctl "${OPERATION}" "${SERVICE}"
     fi
 }
 
