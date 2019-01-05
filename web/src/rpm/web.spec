@@ -49,7 +49,7 @@ BuildRequires:      xsltproc
 Requires(post):     %{org_id}-rpm-scripts
 Requires(pre):      apache2 >= 2.4.6
 Requires:           apache2-mod_authn_otp >= 1.1.5
-Requires:           apache2-mod_php5
+Requires:           mod_php_any
 
 %description
 %{summary}.
