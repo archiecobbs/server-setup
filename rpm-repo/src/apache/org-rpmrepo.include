@@ -9,4 +9,10 @@ Alias @repourlpath@/ "@repodir@/"
     AuthBasicProvider       @org_id@-rpmrepo
     Require                 valid-user
 </Directory>
+<Location "@repourlpath@/">
+    AuthType                basic
+    AuthName                "@org_name@ RPM Repository"
+    AuthBasicProvider       @org_id@-rpmrepo
+    Require                 valid-user
+</Location>
 
