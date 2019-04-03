@@ -1,8 +1,0 @@
-[repo-oss]
-name=openSUSE OSS (@osrel@)
-type=yast2
-baseurl=http://download.opensuse.org/distribution/@osrel@/repo/oss/
-gpgcheck=1
-enabled=1
-autorefresh=0
-keeppackages=0

@@ -326,6 +326,9 @@
                         echo 'unknown';
                     fi;
                     . /etc/os-release;
+                    if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
+                        ID='leap';
+                    fi;
                     echo &quot;$${ID}&quot;;
                 "/>
             </exec>
@@ -735,6 +738,9 @@
                         echo '@{osname}';
                     else
                         . /etc/os-release;
+                        if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
+                            ID='leap';
+                        fi;
                         echo &quot;$${ID}&quot;;
                     fi;
                 "/>
@@ -884,6 +890,9 @@
                     if [ -n '@{osname}' ]; then
                         OSNAME='@{osname}';
                     else
+                        if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
+                            ID='leap';
+                        fi;
                         OSNAME=&quot;$${ID}&quot;;
                     fi;
                     if [ -n '@{osrel}' ]; then

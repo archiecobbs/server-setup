@@ -48,10 +48,8 @@ and %{org_name} zypper repositories.
 mkdir -p repofiles
 if [ '%{osrel}' = 'tumbleweed' ]; then
     REPO_TMPL_DIR='repo/%{osrel}'
-elif [ `echo '%{osrel} >= 42' | bc -l` = 1 ]; then
-    REPO_TMPL_DIR='repo/leap'
 else
-    REPO_TMPL_DIR='repo/%{osname}'
+    REPO_TMPL_DIR='repo/leap'
 fi
 find "${REPO_TMPL_DIR}" -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`

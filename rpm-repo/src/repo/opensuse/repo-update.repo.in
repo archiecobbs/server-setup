@@ -1,8 +1,0 @@
-[repo-update]
-name=openSUSE Update (@osrel@)
-type=rpm-md
-baseurl=http://download.opensuse.org/update/@osrel@/
-gpgcheck=1
-enabled=1
-autorefresh=0
-keeppackages=0
