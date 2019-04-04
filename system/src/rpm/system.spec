@@ -47,6 +47,9 @@ Requires:           mailx
 Requires:           man
 Requires:           man-pages
 Requires:           net-tools
+%if "%{osrel}" != "42.3"
+Requires:           net-tools-deprecated
+%endif
 Requires:           ntp
 Requires:           openssl
 Requires:           patch
