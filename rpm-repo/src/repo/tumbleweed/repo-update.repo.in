@@ -1,7 +1,7 @@
 [repo-update]
 name=openSUSE Tumbleweed Update
 type=rpm-md
-baseurl=http://download.opensuse.org/update/tumbleweed/
+baseurl=@repobaseurl@/update/tumbleweed/
 gpgcheck=1
 enabled=1
 autorefresh=0

@@ -12,6 +12,7 @@
 #
 
 %define zyppdir     %{_sysconfdir}/zypp/repos.d 
+%define repobaseurl http://download.opensuse.org
 
 Name:               %{org_id}-zypper-repos
 Version:            %(echo %{scm_revision} | tr - .)
@@ -53,8 +54,13 @@ else
 fi
 find "${REPO_TMPL_DIR}" -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`
-    genrepo '%{osname}' '%{osrel}' < "${REPOFILE}" > repofiles/"${FNAME}"
+    genrepo '%{osname}' '%{osrel}' '%{repobaseurl}' < "${REPOFILE}" > repofiles/"${FNAME}"
 done
+
+# Fix for older repo format
+if echo '%{osrel}' | grep -qE '^42\.'; then
+    sed -i 's/rpm-md/yast2/g' repofiles/repo-{oss,non-oss}.repo
+fi
 
 # Create %{org_name} repo file
 genrepo '%{osname}' '%{osrel}' < repo/org/org.repo.in > repofiles/%{org_id}.repo

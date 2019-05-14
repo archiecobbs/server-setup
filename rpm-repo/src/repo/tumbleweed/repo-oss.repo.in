@@ -1,7 +1,7 @@
 [repo-oss]
 name=openSUSE Tumbleweed OSS
-type=yast2
-baseurl=http://download.opensuse.org/tumbleweed/repo/oss/
+type=rpm-md
+baseurl=@repobaseurl@/tumbleweed/repo/oss/
 gpgcheck=1
 enabled=1
 autorefresh=0

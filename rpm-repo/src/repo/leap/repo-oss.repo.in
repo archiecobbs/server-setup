@@ -1,7 +1,7 @@
 [repo-oss]
 name=openSUSE Leap OSS (@osrel@)
-type=yast2
-baseurl=http://download.opensuse.org/distribution/leap/@osrel@/repo/oss/
+type=rpm-md
+baseurl=@repobaseurl@/distribution/leap/@osrel@/repo/oss/
 gpgcheck=1
 enabled=1
 autorefresh=0

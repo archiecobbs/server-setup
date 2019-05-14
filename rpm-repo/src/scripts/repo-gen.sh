@@ -5,6 +5,7 @@ genrepo()
     # Get O/S name and version
     OS_NAME="$1"
     OS_REL="$2"
+    REPO_BASE_URL="$3"
 
     # Substitute values into template
     sed -r \
@@ -14,6 +15,7 @@ genrepo()
       -e 's|@REPO_URLPATH@|'"${REPO_URLPATH}"'|g' \
       -e 's|@REPO_USERNAME@|'"${REPO_USERNAME}"'|g' \
       -e 's|@REPO_PASSWORD@|'"${REPO_PASSWORD}"'|g' \
+      -e 's#@repobaseurl@#'"${REPO_BASE_URL}"'#g' \
       -e 's|@URL_AUTH_PREFIX@|'"${URL_AUTH_PREFIX}"'|g' \
       -e 's|@osname@|'"${OS_NAME}"'|g' \
       -e 's|@osrel@|'"${OS_REL}"'|g'

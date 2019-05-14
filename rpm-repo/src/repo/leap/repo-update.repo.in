@@ -1,7 +1,7 @@
 [repo-update]
 name=openSUSE Leap Update (@osrel@)
 type=rpm-md
-baseurl=http://download.opensuse.org/update/leap/@osrel@/oss/
+baseurl=@repobaseurl@/update/leap/@osrel@/oss/
 gpgcheck=1
 enabled=1
 autorefresh=0
