@@ -111,13 +111,13 @@ update_blurb %{ntpconf} << 'xxEOFxx'
 restrict default ignore
 restrict -6 default ignore
 
-server      time1.google.com
+server      time1.google.com iburst
 restrict    time1.google.com nomodify notrap nopeer noquery
-server      time2.google.com
+server      time2.google.com iburst
 restrict    time2.google.com nomodify notrap nopeer noquery
-server      time3.google.com
+server      time3.google.com iburst
 restrict    time3.google.com nomodify notrap nopeer noquery
-server      time4.google.com
+server      time4.google.com iburst
 restrict    time4.google.com nomodify notrap nopeer noquery
 
 restrict 127.0.0.1
