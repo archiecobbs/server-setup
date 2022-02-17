@@ -13,6 +13,7 @@
 # apache stuff
 %define pkgdir      %{_datadir}/%{name}
 %define apachedir   %{_sysconfdir}/apache2
+%define listenconf  %{apachedir}/listen.conf
 %define apconfig    %{_sysconfdir}/sysconfig/apache2
 %define apconfdir   %{apachedir}/conf.d
 %define publicroot  /srv/www
@@ -145,6 +146,9 @@ filevar_set_var %{apconfig} APACHE_SERVERADMIN '%{serveremail}'
 for MODULE in %{apmodules}; do
     a2enmod -q "${MODULE}" || a2enmod "${MODULE}"
 done
+
+# Disable port 80
+sed_patch_file %{listenconf} -r 's/^(Listen[[:space:]]+80[[:space:]]*)$/#\1/g'
 
 # Enable and reload apache
 systemctl enable apache2.service
