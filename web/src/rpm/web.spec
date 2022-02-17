@@ -32,9 +32,10 @@
 %define otpdir      %{pkgdir}/otp
 %define otpfile     %{otpdir}/users.txt
 %define otppinfile  %{otpdir}/pin-htpasswd.txt
+%define proxpwfile  %{pkgdir}/proxy-auth.txt
 
 # modules
-%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp
+%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp proxy proxy_http proxy_connect
 
 # exim
 %define eximdir     %{_datadir}/%{org_id}-smtp
@@ -78,6 +79,7 @@ subst()
         -e 's|@org_id@|%{org_id}|g' \
         -e 's|@otpfile@|%{otpfile}|g' \
         -e 's|@otppinfile@|%{otppinfile}|g' \
+        -e 's|@proxpwfile@|%{proxpwfile}|g' \
         -e 's|@publiclog@|%{publiclog}|g' \
         -e 's|@publicroot@|%{publicroot}|g' \
         -e 's|@serveremail@|%{serveremail}|g' \
@@ -133,6 +135,9 @@ install -d -m 0755 %{buildroot}%{_bindir}
 install -m 0755 scripts/genkey %{buildroot}%{_bindir}/genkey
 install -m 0755 setpin genotpurl %{buildroot}%{_bindir}/
 
+# Proxy auth file
+install -m 0644 /dev/null %{buildroot}%{proxpwfile}
+
 %post
 
 # Load handy scripts
@@ -168,7 +173,7 @@ systemctl try-restart apache2.service
 %attr(400,mail,mail) %{eximdir}/ssl.key
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
 %attr(640,root,www) %config(noreplace) %{otppinfile}
+%attr(640,root,www) %config(noreplace) %{proxpwfile}
 %attr(755,root,root) %{_bindir}/genkey
 %attr(4755,root,root) %{_bindir}/setpin
 %attr(755,root,root) %{_bindir}/genotpurl
-
