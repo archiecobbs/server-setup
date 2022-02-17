@@ -47,7 +47,6 @@ rm -rf %{buildroot}
 update_blurb %{sshd_config} << xxEOFxx
 PasswordAuthentication no
 PermitRootLogin no
-UsePAM no
 UseDNS no
 TCPKeepAlive yes
 ChallengeResponseAuthentication no
