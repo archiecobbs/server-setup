@@ -10,6 +10,7 @@
 #
 
 %define pkgdir      %{_datadir}/%{name}
+%define webpkgdir   %{_datadir}/%{org_id}-web
 %define eximconf    %{_sysconfdir}/exim/exim.conf
 
 # Required version
@@ -49,11 +50,9 @@ xmlfind "/routing/users/user[@name = /routing/root/@user]" "@email" > root-forwa
 # Build exim main config snippet
 printf '\n' > exim-main
 printf 'qualify_domain = %%s\n' "`xmlfind /routing/local @domain`" >> exim-main
-if [ -s tls/tls.key -a -s tls/tls.crt ]; then
-    printf 'tls_advertise_hosts = *\n' >> exim-main
-    printf 'tls_certificate = %%s\n' '%{pkgdir}/tls.crt' >> exim-main
-    printf 'tls_privatekey = %%s\n' '%{pkgdir}/tls.key' >> exim-main
-fi
+printf 'tls_advertise_hosts = *\n' >> exim-main
+printf 'tls_certificate = %%s\n' '%{pkgdir}/ssl.crt' >> exim-main
+printf 'tls_privatekey = %%s\n' '%{pkgdir}/ssl.key' >> exim-main
 NUM_DOMAINS=`xmlfind / 'count(/routing/domain)'`
 if [ "${NUM_DOMAINS}" -eq 0 ]; then
     printf 'local_interfaces = 127.0.0.1\n' >> exim-main
@@ -161,12 +160,6 @@ find . -maxdepth 1 -name 'aliases-*' -print | while read FILE; do
     install -m 0644 "${FILE}" %{buildroot}/%{pkgdir}/
 done
 
-# TLS key and cert(s)
-install -m 0644 tls/tls.key %{buildroot}/%{pkgdir}/
-find tls -name '*.crt' -a -type f -print | while read FILE; do
-    cat "${FILE}" >> %{buildroot}/%{pkgdir}/tls.crt
-done
-
 # Static blurbs
 install -m 0644 blurbs/exim-spam-rcpt %{buildroot}/%{pkgdir}/
 
@@ -187,9 +180,15 @@ cat %{pkgdir}/exim-spam-rcpt    | update_blurb '%{eximconf}' 'require verify = r
 systemctl enable exim.service
 systemctl try-restart exim.service
 
+# Reload exim when SSL cert (from web package) is updated
+%triggerin -- %{org_id}-web
+
+if systemctl -q is-active exim.service; then
+    systemctl try-restart exim.service
+fi
+
 %files
 %defattr(0644,root,root,0755)
-%attr(0600,mail,mail) %{pkgdir}/tls.key
 %attr(0600,mail,mail) %{pkgdir}/authdb
 %{pkgdir}
 /root/.forward

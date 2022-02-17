@@ -1,0 +1,2 @@
+src/certbot/keys/*.pem -diff
+src/certbot/archive/*/privkey*.pem -diff

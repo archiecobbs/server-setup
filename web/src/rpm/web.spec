@@ -7,6 +7,7 @@
 #   org_name
 #   org_domain
 #   web_hostname
+#   basedir
 #
 
 # apache stuff
@@ -33,6 +34,9 @@
 
 # modules
 %define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp
+
+# exim
+%define eximdir     %{_datadir}/%{org_id}-smtp
 
 Name:               %{org_id}-web
 Version:            %(echo %{scm_revision} | tr - .)
@@ -113,6 +117,11 @@ install -d -m 0755 %{buildroot}%{ssldir}
 install -m 600 certbot/live/%{web_hostname}/privkey.pem %{buildroot}%{sslkeyfile}
 install certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{sslcrtfile}
 
+# Exim's copy
+install -d -m 0755 %{buildroot}%{eximdir}
+install -m 600 certbot/live/%{web_hostname}/privkey.pem %{buildroot}%{eximdir}/ssl.key
+install certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{eximdir}/ssl.crt
+
 # OTP directory, OTP users file, and encrypted PINs
 install -d -m 0755 %{buildroot}%{otpdir}
 install -m 0600 /dev/null %{buildroot}%{otpfile}
@@ -149,8 +158,10 @@ systemctl try-restart apache2.service
 %dir %{pkgdir}
 %{publicroot}/*
 %dir %{ssldir}
-%{sslcrtfile}
+%attr(644,wwwrun,www) %{sslcrtfile}
 %attr(400,wwwrun,www) %{sslkeyfile}
+%attr(644,mail,mail) %{eximdir}/ssl.crt
+%attr(400,mail,mail) %{eximdir}/ssl.key
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
 %attr(640,root,www) %config(noreplace) %{otppinfile}
 %attr(755,root,root) %{_bindir}/genkey
