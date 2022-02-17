@@ -9,49 +9,72 @@
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
 
-    <!-- Pass web server hostname to RPM build -->
-    <property name="build.extra.rpm.flags" value="--define 'web_hostname ${web.hostname}'"/>
+    <!-- SSL cert info -->
+    <property name="api.email" value="${org.contact}"/>
+    <property name="ssl.domain" value="${org.domain}"/>
 
-    <!-- Acquire new SSL cert -->
-    <target name="issue" unless="issue.completed">
+    <!-- Pass extra flags to RPM build -->
+    <property name="build.extra.rpm.flags" value="
+        --define 'web_hostname ${web.hostname}'
+        --define 'basedir ${basedir}'
+    "/>
 
-        <!-- Acquire new cert -->
-        <echo message="Acquiring new SSL certificate..."/>
-        <exec executable="sudo" logError="true" failonerror="true">
-            <arg value="bash"/>
-            <arg value="-c"/>
-            <arg value="
-                certbot certonly
-                  --apache
-                  --agree-tos
-                  --non-interactive
-                  --email ${org.contact}
-                  --config ${basedir}/src/certbot/cli.ini
-                  --config-dir ${basedir}/src/certbot
-                  -d ${web.hostname}
-            "/>
-        </exec>
-        <echo message="Done."/>
-        <property name="issue.completed" value="true"/>
+    <!-- Get API credentials -->
+    <target name="api.token" unless="api.token.completed">
+
+        <!-- Sanity check -->
+        <fail message="`api.email' property not defined" unless="api.email"/>
+
+        <!-- Read API token -->
+        <input message="&#10;Enter DNSimple APIv2 token for ${api.email}: " addproperty="api.token">
+            <handler type="secure"/>
+        </input>
+
+        <!-- Done -->
+        <property name="api.token.completed" value="true"/>
     </target>
 
-    <!-- Renew SSL cert -->
-    <target name="renew" unless="renew.completed">
-        <echo message="Renewing SSL certificate for ${web.hostname}..."/>
-        <exec executable="sudo" logError="true" failonerror="true">
-            <arg value="bash"/>
+    <!-- Renew SSL certs -->
+    <target name="certs" depends="clean, api.token" unless="certs.completed">
+        <echo message="*** Renewing SSL certificates..."/>
+        <exec executable="/bin/bash" logError="true" failonerror="true">
             <arg value="-c"/>
             <arg value="
-                certbot renew
-                  --apache
+
+                set -e;
+
+                rm -rf ${basedir}/build/certbot;
+                mkdir -p ${basedir}/build/certbot;
+                TEMP='${basedir}/build/creds.txt';
+                printf 'dns_dnsimple_token = %s\n' '${api.token}' > $${TEMP};
+                trap &quot;rm -f $${TEMP}&quot; 0 2 3 5 10 13 15;
+
+                DOMAINS='';
+                for HOST in ${web.hostname}; do
+                    DOMAINS=&quot;$${DOMAINS} --domain $${HOST}&quot;;
+                done;
+
+                certbot --verbose certonly
                   --agree-tos
                   --non-interactive
-                  --email ${org.contact}
-                  --config ${basedir}/src/certbot/cli.ini
-                  --config-dir ${basedir}/src/certbot
+                  --force-renewal
+                  --email '${api.email}'
+                  --config '${basedir}/src/certbot/cli.ini'
+                  --config-dir '${basedir}/src/certbot'
+                  --work-dir '${basedir}/build/certbot'
+                  --logs-dir '${basedir}/build/certbot'
+                  --dns-dnsimple
+                  --dns-dnsimple-credentials &quot;$${TEMP}&quot;
+                  --dns-dnsimple-propagation-seconds 5
+                  --cert-name '${web.hostname}'
+                  $${DOMAINS};
+
+                find '${basedir}/src/certbot' -name '*.conf' -print0 | xargs -0 -n 1 sed -i 's|${basedir}/||g';
+
+                git add src/certbot;
             "/>
         </exec>
-        <property name="renew.completed" value="true"/>
+        <property name="certs.completed" value="true"/>
     </target>
 
 </project>
