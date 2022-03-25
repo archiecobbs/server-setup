@@ -33,7 +33,7 @@ BuildRequires:      apache2-utils
 
 Requires(pre):      pwdutils
 Requires(post):     findutils
-Requires:           createrepo >= 0.10
+Requires:           createrepo-implementation
 
 %description
 %{summary}.
