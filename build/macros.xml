@@ -779,17 +779,17 @@
                                     if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
                                         find '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'
                                             -type f -name &quot;$${NAME}-*.rpm&quot; -print0
-                                          | xargs -n 1 -0 -I@ sh -c
+                                          | xargs -0 -I@ -n 1 sh -c
                                             'test `rpm -qp --queryformat=&quot;%{name}&quot; &quot;@&quot;`
                                               = &quot;'&quot;$${NAME}&quot;'&quot; &amp;&amp; echo &quot;@&quot;'
-                                          | xargs -n 1 -r -I@ sh -c 'echo @; rm @';
+                                          | xargs -r -I@ -n 1 sh -c 'echo @; rm @';
                                     else
                                         ssh '@{repohost}' find \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'\'
                                             -type f -name \&quot;&quot;$${NAME}-*.rpm&quot;\&quot; -print0
-                                          \| xargs -n 1 -0 -I@ sh -c
+                                          \| xargs -0 -I@ -n 1 sh -c
                                             \''test `rpm -qp --queryformat=&quot;%{name}&quot; &quot;@&quot;`
                                               = &quot;'\''&quot;'&quot;$${NAME}&quot;'&quot;'\''&quot; &amp;&amp; echo &quot;@&quot;'\'
-                                          \| xargs -n 1 -r -I@ sh -c \''echo @; rm @'\';
+                                          \| xargs -r -I@ -n 1 sh -c \''echo @; rm @'\';
                                     fi;
                                 ) | sed ${sed.extended.flag} 's|^.*/([^/]+)$$|    \1|g';
                             done;
