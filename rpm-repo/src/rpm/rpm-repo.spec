@@ -33,7 +33,7 @@ BuildRequires:      apache2-utils
 
 Requires(pre):      pwdutils
 Requires(post):     findutils
-Requires:           createrepo-implementation
+Requires(post):     createrepo_c >= 0.16.0
 
 %description
 %{summary}.
@@ -108,16 +108,36 @@ install %{org_id}-rpmrepo-auth-provider.conf %{buildroot}%{apconfdir}/
 install -d %{buildroot}%{orgwebincdir}
 install %{org_id}-rpmrepo.port443.include %{buildroot}%{orgwebincdir}/
 
+# Install scripts
+install -d -m 0755 %{buildroot}/%{_bindir}
+for NAME in repo-{rebuild,sign-rpms}; do
+    FILE="%{buildroot}/%{_bindir}/${NAME}"
+    install -m 0755 scripts/"${NAME}".sh "${FILE}"
+    sed -i \
+      -e 's|@repo_dir@|%{repo_dir}|g' \
+      -e 's|@org_name@|%{org_name}|g' \
+      "${FILE}"
+done
+
 %pre
 # Create repo group
 %{__grep} -q ^rpmrepo: /etc/group || groupadd rpmrepo
 
 %post
 
+# Create initial meta-data if needed
+for OS_REL in `echo %{os_versions} | tr , ' '`; do
+    REPODIR="%{repo_dir}/${OS_REL}"
+    if ! [ -e "${REPODIR}"/repodata/repomd.xml ]; then
+        createrepo -q "${REPODIR}"
+    fi
+done
+
 # Fix permissions
 chgrp -R rpmrepo %{repo_dir}/*
 find %{repo_dir}/* -mindepth 2 -perm 444 -o -print0 | xargs -0r chmod g+w 
 find %{repo_dir}/* -type d -print0 | xargs -0r chmod g+s 
+chmod 644 %{repo_dir}/*/repodata/%{org_id}-repo.key
 
 # Reload apache (if present)
 if systemctl is-active apache2.service >/dev/null; then
@@ -125,13 +145,15 @@ if systemctl is-active apache2.service >/dev/null; then
 fi
 
 %files
-%attr(2775,root,rpmrepo) %{repo_dir}/*
-%verify(not owner) %{repo_dir}/*/repodata
+%attr(0775,root,root) %dir %{repo_dir}
+%attr(2775,root,rpmrepo) %dir %{repo_dir}/*
+%attr(2775,root,rpmrepo) %{repo_dir}/*/[a-qs-z]*
+%attr(2775,root,rpmrepo) %verify(not user) %{repo_dir}/*/repodata
 %attr(0644,root,rpmrepo) %{repo_dir}/*/*.repo
 %attr(0644,root,rpmrepo) %{repo_dir}/*.properties
+%attr(0644,root,rpmrepo) %{repo_dir}/*/repodata/%{org_id}-repo.key
+%attr(0755,root,root) %{_bindir}/*
 %defattr(0644,root,root,0775)
-%dir %{repo_dir}
 %{pkgdir}
 %{orgwebincdir}/*
 %{apconfdir}/*
-

@@ -22,6 +22,7 @@
     <!-- Project should override these as necessary -->
     <property name="javac.compiler.flags" value="-Xlint:all"/>
     <property name="java.source.version" value="1.8"/>
+    <property name="default.signing.key" value="${org.name} Package Signing Key"/>
 
 <!--
         ************* DETERMINE BASE DIRECTORY ****************
@@ -326,7 +327,7 @@
                         echo 'unknown';
                     fi;
                     . /etc/os-release;
-                    if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
+                    if echo $${ID} $${ID_LIKE} | grep -qw leap; then
                         ID='leap';
                     fi;
                     echo &quot;$${ID}&quot;;
@@ -625,7 +626,7 @@
                 <bindingfileset dir="${basedir}">
                     <bindings/>
                 </bindingfileset>
-            </jibx:bind> 
+            </jibx:bind>
         </sequential>
     </macrodef>
 
@@ -660,6 +661,7 @@
         <attribute name="specfile" default="${ant.project.name}.spec" description="Name of RPM spec file"/>
         <attribute name="buildflag" default="-bb" description="rpmbuild(1) build flag"/>
         <attribute name="rpmflags" default="" description="Additional flags to rpmbuild"/>
+        <attribute name="signkey" default="${default.signing.key}" description="Key with which to sign RPM files"/>
         <attribute name="fresh" default="true" description="Blow away old RPMs in dist/RPMS first"/>
         <element name="source-preparation" optional="yes"/>
         <sequential>
@@ -696,11 +698,51 @@
                 </antcontrib:then>
             </antcontrib:if>
             <source-preparation/>
+            <antcontrib:if>
+                <and>
+                    <not>
+                        <equals arg1="@{signkey}" arg2=""/>
+                    </not>
+                    <not>
+                        <equals arg1="${nosign}" arg2="true"/>
+                    </not>
+                </and>
+                <antcontrib:then>
+                    <exec executable="touch" logError="true" failonerror="true">
+                        <arg value="build/timestamp.rpmbuild"/>
+                    </exec>
+                </antcontrib:then>
+            </antcontrib:if>
             <basename property="spec.@{specfile}.name" file="@{specfile}"/>
             <rpm topdir="build/rpm" specfile="${spec.@{specfile}.name}" command="@{buildflag}
               --define 'scm_revision ${scm_revision}'
               @{rpmflags}" rpmBuildCommand="rpmbuild"
               failOnError="true"/>
+            <antcontrib:if>
+                <and>
+                    <not>
+                        <equals arg1="@{signkey}" arg2=""/>
+                    </not>
+                    <not>
+                        <equals arg1="${nosign}" arg2="true"/>
+                    </not>
+                </and>
+                <antcontrib:then>
+                    <echo message="Signing RPM(s):"/>
+                    <exec executable="/bin/bash" logError="true" failonerror="true">
+                        <arg value="-c"/>
+                        <arg value="
+                            if ! gpg2 --list-keys '@{signkey}' 2>/dev/null; then
+                                echo &quot;Error: RPM signing key '@{signkey}' not found&quot; 1&gt;&amp;2;
+                                exit 1;
+                            fi
+                            find build/rpm/RPMS -name '*.rpm' -newer build/timestamp.rpmbuild -print | sed 's/^/    /';
+                            sleep 0.2;
+                            find build/rpm/RPMS -name '*.rpm' -newer build/timestamp.rpmbuild -print0
+                              | xargs -0 rpm --define '_gpg_name @{signkey}' --addsign"/>
+                    </exec>
+                </antcontrib:then>
+            </antcontrib:if>
             <copy todir="dist" overwrite="true" verbose="true">
                 <fileset dir="build/rpm">
                     <include name="RPMS/*/*.rpm"/>
@@ -717,6 +759,7 @@
         <attribute name="osrel" default="" description="Repository O/S release (default current)"/>
         <attribute name="susever" default="" description="Repository openSuSE version (OBSOLETE - do not use)"/>
         <attribute name="purge" default="false" description="Whether to remove all other revisions from repository"/>
+        <attribute name="signkey" default="${default.signing.key}" description="Key with which to sign repository meta-data"/>
         <attribute name="pattern" default="*.rpm" description="Filename glob pattern"/>
         <sequential>
 
@@ -738,7 +781,7 @@
                         echo '@{osname}';
                     else
                         . /etc/os-release;
-                        if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
+                        if echo $${ID} $${ID_LIKE} | grep -qw leap; then
                             ID='leap';
                         fi;
                         echo &quot;$${ID}&quot;;
@@ -757,42 +800,41 @@
                 "/>
             </exec>
 
-            <!-- Derive repo directory name (includes O/S version but not name) -->
-            <property name="_rpmdist.osver.@{osname}@{osrel}" value="${_rpmdist.osrel.@{osrel}}"/>
-
-            <!-- Derive osname + osversion label (includes both O/S name and version) -->
-            <property name="_rpmdist.oslabel.@{osname}@{osrel}" value="${_rpmdist.osname.@{osname}}${_rpmdist.osrel.@{osrel}}"/>
+            <!-- Combine O/S name and release -->
+            <property name="_rpmdist.osver.@{osname}@{osrel}" value="${_rpmdist.osname.@{osname}}${_rpmdist.osrel.@{osrel}}"/>
 
             <!-- Optionally remove older versions -->
             <antcontrib:if>
                 <equals arg1="@{purge}" arg2="true"/>
                 <antcontrib:then>
-                    <echo message="Note: removing old RPM(s) in @{repodir}/${_rpmdist.osver.@{osname}@{osrel}}:"/>
+                    <echo message="Note: removing old RPM(s) in @{repodir}/${_rpmdist.osrel.@{osrel}}:"/>
                     <exec executable="/bin/bash" logError="true" failonerror="true">
                         <arg value="-c"/>
                         <arg value="
                             set -e;
 
+                            NAME_REGEX='';
                             for FILE in `find dist/RPMS -type f -name '@{pattern}' -print`; do
                                 NAME=`rpm -qp --queryformat='%{name}\n' &quot;$${FILE}&quot;`;
-                                (
-                                    if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
-                                        find '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'
-                                            -type f -name &quot;$${NAME}-*.rpm&quot; -print0
-                                          | xargs -0 -I@ -n 1 sh -c
-                                            'test `rpm -qp --queryformat=&quot;%{name}&quot; &quot;@&quot;`
-                                              = &quot;'&quot;$${NAME}&quot;'&quot; &amp;&amp; echo &quot;@&quot;'
-                                          | xargs -r -I@ -n 1 sh -c 'echo @; rm @';
-                                    else
-                                        ssh '@{repohost}' find \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'\'
-                                            -type f -name \&quot;&quot;$${NAME}-*.rpm&quot;\&quot; -print0
-                                          \| xargs -0 -I@ -n 1 sh -c
-                                            \''test `rpm -qp --queryformat=&quot;%{name}&quot; &quot;@&quot;`
-                                              = &quot;'\''&quot;'&quot;$${NAME}&quot;'&quot;'\''&quot; &amp;&amp; echo &quot;@&quot;'\'
-                                          \| xargs -r -I@ -n 1 sh -c \''echo @; rm @'\';
-                                    fi;
-                                ) | sed ${sed.extended.flag} 's|^.*/([^/]+)$$|    \1|g';
+                                if ! [[ &quot;$${NAME}&quot; =~ ^[-_.[:alnum:]]+$$ ]]; then
+                                    echo &quot;Error: can't handle funky RPM name \&quot;$${NAME}\&quot;&quot; 1&gt;&amp;2;
+                                    exit 1;
+                                fi;
+                                if [ -n &quot;$${NAME_REGEX}&quot; ]; then
+                                    NAME_REGEX=&quot;$${NAME_REGEX}|&quot;;
+                                fi;
+                                NAME_REGEX=&quot;$${NAME_REGEX}$${NAME}&quot;;
                             done;
+                            REGEX=&quot;.*/($${NAME_REGEX})-[^/-]+-[^/-]+.rpm&quot;;
+                            (
+                                if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                                    find '@{repodir}/${_rpmdist.osrel.@{osrel}}'
+                                        -type f -regextype posix-extended -regex &quot;$${REGEX}&quot; -delete -print;
+                                else
+                                    ssh '@{repohost}' find \''@{repodir}/${_rpmdist.osrel.@{osrel}}'\'
+                                        -type f -regextype posix-extended -regex \'&quot;$${REGEX}&quot;\' -delete -print;
+                                fi;
+                            ) | LC_ALL=C sort | sed ${sed.extended.flag} 's|^.*/([^/]+)$$|    \1|g';
                         "/>
                     </exec>
                 </antcontrib:then>
@@ -807,19 +849,19 @@
                     (
                         set +e;
                         find * -type f -name '@{pattern}' -print | grep -vE '^.*\.${_rpmdist.osname.@{osname}}[0-9][0-9.]*\..*$$';
-                        find * -type f -name '@{pattern}' -print | grep -E '^.*\.${_rpmdist.oslabel.@{osname}@{osrel}}\..*$$';
+                        find * -type f -name '@{pattern}' -print | grep -E '^.*\.${_rpmdist.osver.@{osname}@{osrel}}\..*$$';
                     ) | (
-                        if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
-                            echo 'Publishing RPMs to @{repodir}/${_rpmdist.osver.@{osname}@{osrel}}:';
+                        if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                            echo 'Publishing RPMs to @{repodir}/${_rpmdist.osrel.@{osrel}}:';
                             umask 002;
-                            cpio --quiet -pmudvl '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}' 2&gt;&amp;1
+                            cpio --quiet -pmudvl '@{repodir}/${_rpmdist.osrel.@{osrel}}' 2&gt;&amp;1
                               | grep -vE '^cpio: .* linked to'
-                              | sed ${sed.extended.flag} 's|@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/[^/]+/|    |g'
+                              | sed ${sed.extended.flag} 's|@{repodir}/${_rpmdist.osrel.@{osrel}}/[^/]+/|    |g'
                               | sort;
                         else
-                            echo 'Publishing RPMs to @{repodir}/${_rpmdist.osver.@{osname}@{osrel}} on @{repohost}:';
+                            echo 'Publishing RPMs to @{repodir}/${_rpmdist.osrel.@{osrel}} on @{repohost}:';
                             cpio -o -H crc --quiet
-                              | ( ssh '@{repohost}' cd \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'\'
+                              | ( ssh '@{repohost}' cd \''@{repodir}/${_rpmdist.osrel.@{osrel}}'\'
                                 \&amp;\&amp; umask 002 \&amp;\&amp; cpio --quiet -imudv '2&gt;&amp;1' )
                               | sed ${sed.extended.flag} 's|^[^/]+/|    |g'
                               | sort;
@@ -833,19 +875,55 @@
                 <arg value="-c"/>
                 <arg value="
                     set -e;
-                    if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
+                    if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
                         echo 'Regenerating repository meta-data...';
                         umask 002;
-                        createrepo -q -c '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/cache'
-                          --update '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}';
+                        createrepo -q -c '@{repodir}/${_rpmdist.osrel.@{osrel}}/cache'
+                          --update '@{repodir}/${_rpmdist.osrel.@{osrel}}';
                     else
                         echo 'Regenerating repository meta-data on @{repohost}...';
                         ssh '@{repohost}' umask 002
-                          \&amp;\&amp; createrepo -q -c \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/cache'\'
-                          --update \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}'\';
+                          \&amp;\&amp; createrepo -q -c \''@{repodir}/${_rpmdist.osrel.@{osrel}}/cache'\'
+                          --update \''@{repodir}/${_rpmdist.osrel.@{osrel}}'\';
                     fi;
                 "/>
             </exec>
+
+            <!-- Sign repository meta-data -->
+            <antcontrib:if>
+                <and>
+                    <not>
+                        <equals arg1="@{signkey}" arg2=""/>
+                    </not>
+                    <not>
+                        <equals arg1="${nosign}" arg2="true"/>
+                    </not>
+                </and>
+                <antcontrib:then>
+                    <echo message="Signing repository meta-data..."/>
+                    <exec executable="/bin/bash" logError="true" failonerror="true">
+                        <arg value="-c"/>
+                        <arg value="
+                            set -e;
+                            if [ -z '@{repohost}' -o '@{repohost}' = `hostname` ]; then
+                                if ! gpg2 --list-keys '@{signkey}' 2>/dev/null; then
+                                    echo &quot;Error: RPM signing key '@{signkey}' not found&quot; 1&gt;&amp;2;
+                                    exit 1;
+                                fi
+                                umask 002;
+                                rm -f '@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata/repomd.xml.asc';
+                                gpg2 -sabq --default-key '@{signkey}'
+                                  '@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata/repomd.xml';
+                            else
+                                ssh '@{repohost}' umask 002
+                                  \&amp;\&amp; rm -f \''@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata/repomd.xml.asc'\';
+                                  \&amp;\&amp; gpg2 -sabq --default-key \''@{signkey}'\'
+                                  \''@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata/repomd.xml'\';
+                            fi;
+                        "/>
+                    </exec>
+                </antcontrib:then>
+            </antcontrib:if>
 
             <!-- Work around this bug: https://bugzilla.novell.com/show_bug.cgi?id=659915 -->
             <exec executable="/bin/bash" logError="true" failonerror="true">
@@ -887,12 +965,12 @@
                         FORCE_FLAG='--force';
                     fi;
                     . /etc/os-release;
+                    if echo $${ID} $${ID_LIKE} | grep -qw leap; then
+                        ID='leap';
+                    fi;
                     if [ -n '@{osname}' ]; then
                         OSNAME='@{osname}';
                     else
-                        if [ &quot;$${ID}&quot; = 'opensuse' -a &quot;$${NAME}&quot; = 'openSUSE Leap' ]; then
-                            ID='leap';
-                        fi;
                         OSNAME=&quot;$${ID}&quot;;
                     fi;
                     if [ -n '@{osrel}' ]; then

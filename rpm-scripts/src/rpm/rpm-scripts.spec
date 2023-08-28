@@ -26,6 +26,7 @@ URL:                http://%{org_domain}/
 Requires:           diffutils
 Requires:           grep
 Requires:           sed
+Requires:           xsltproc
 
 %description
 %{summary}.

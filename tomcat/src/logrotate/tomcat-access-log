@@ -1,0 +1,10 @@
+/var/log/tomcat/access_log {
+    notifempty
+    copytruncate
+    weekly
+    rotate 12
+    compress
+    missingok
+    su tomcat tomcat
+    create 0644 tomcat tomcat
+}

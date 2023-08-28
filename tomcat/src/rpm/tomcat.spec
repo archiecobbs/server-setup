@@ -13,14 +13,17 @@
 
 %define pkgdir      %{_datadir}/%{name}
 
-%define tomcatver   8.0.43
+%define tomcatver   9.0.43
 
 %define pkgdir      %{_datadir}/%{name}
+%define catoptsdir  %{pkgdir}/catalina.opts.d
+%define tomconfdir  %{_sysconfdir}/tomcat/conf.d
 %define serverxml   %{_sysconfdir}/tomcat/server.xml
 %define contextxml  %{_sysconfdir}/tomcat/context.xml
 %define tomcatconf  %{_sysconfdir}/tomcat/tomcat.conf
-%define tomcatsysd  %{_sbindir}/tomcat-sysd
-%define heappct     70
+%define logrotated  %{_sysconfdir}/logrotate.d
+%define tomcatsvc   %{_usr}/lib/systemd/system/tomcat.service
+%define maxheap     4g
 
 # %{org_id}-web RPM config file include directory
 %define servincdir  %{_datadir}/%{org_id}-web/apache
@@ -31,11 +34,14 @@ Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Setup for Tomcat (%{osname}%{osrel})
 License:            Apache-2.0
 Distribution:       %{org_name} Server Setup
+Source:             %{name}.zip
 BuildRoot:          %{_tmppath}/%{name}-root
 Buildarch:          noarch
 URL:                http://%{org_domain}/
 Requires(post):     %{org_id}-rpm-scripts
 Requires:           tomcat >= %{tomcatver}
+Requires(post):     tomcat >= %{tomcatver}
+Requires:           logrotate
 Requires:           libtcnative-1-0
 
 %description
@@ -43,6 +49,10 @@ Requires:           libtcnative-1-0
 
 %clean
 rm -rf %{buildroot}
+
+%prep
+rm -rf %{buildroot}
+%setup -c
 
 %build
 
@@ -82,8 +92,46 @@ genproxy '%{tomcat_port80_mappings}' >> %{name}.port80.include
 printf '# Port 443 mappings for Tomcat\n' > %{name}.port443.include
 genproxy '%{tomcat_port443_mappings}' >> %{name}.port443.include
 
+# Customizations to tomcat.conf
+cat > %{org_id}-tomcat.conf << 'xxEOFxx'
+
+# Set various Java runtime properties from config files
+CATALINA_OPTS="`find %{catoptsdir} -maxdepth 1 -type f -print0 | sort -z | xargs -0 cat | tr \\\\n ' '`"
+
+# Clear work directory on restart
+CLEAR_WORK="true"
+xxEOFxx
+
 %install
 
+# Customizations to tomcat.conf
+install -d %{buildroot}%{tomconfdir}
+install %{org_id}-tomcat.conf %{buildroot}%{tomconfdir}/
+
+# Add missing logrotate configuration /var/log/tomcat/access_log
+install -d %{buildroot}%{logrotated}
+install logrotate/tomcat-access-log %{buildroot}%{logrotated}/
+
+# Install fixup XSL transforms
+install -d %{buildroot}%{pkgdir}/xsl
+install xsl/* %{buildroot}%{pkgdir}/xsl/
+
+# Directory for CATALINA_OPTS tweaks
+install -d %{buildroot}%{catoptsdir}
+
+# Configure max heap
+printf -- '-Xmx%{maxheap}\n' > %{buildroot}%{catoptsdir}/00-maxheap.opts
+
+# Dump heap on OOM
+printf -- '-XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/tomcat/\n' > %{buildroot}%{catoptsdir}/00-heapdump.opts
+
+# Stop stupid behavior
+printf -- '-Dnet.sf.ehcache.skipUpdateCheck=true\n' > %{buildroot}%{catoptsdir}/00-ehcache-fix.opts
+
+# Avoid AWT weirdness
+printf -- '-Djava.awt.headless=true\n' > %{buildroot}%{catoptsdir}/00-awt-headless.opts
+
+# Install Apache include files
 install -d %{buildroot}%{servincdir}
 install {,%{buildroot}%{servincdir}/}%{name}.port80.include
 install {,%{buildroot}%{servincdir}/}%{name}.port443.include
@@ -93,42 +141,11 @@ install {,%{buildroot}%{servincdir}/}%{name}.port443.include
 # Load handy functions
 . %{_datadir}/%{org_id}-rpm-scripts/rpm-scripts '%{name}' '%{version}' '%{release}'
 
-# Only listen on the loopback interface
-sed_patch_file %{serverxml} -r 's|^([[:space:]]*)(<Connector)( port=".*$)|\1\2 address="127.0.0.1"\3|g'
+# Patch server.xml
+xml_patch_file '%{serverxml}' '%{pkgdir}/xsl/server-patch.xsl'
 
-# Use the NIO connector
-sed_patch_file %{serverxml} -r 's|^(.*<Connector.*8080.*protocol=")[^"]+(".*$)|\1org.apache.coyote.http11.Http11NioProtocol\2|g'
-
-# Don't reload on file changes
-sed_patch_file %{contextxml} -r 's|^([[:space:]]+)(<WatchedResource.*)$|\1<!-- \2 -->|g'
-
-# Don't persist sessions across restarts
-sed_patch_file %{contextxml} -r 's|^([[:space:]]+)(<Manager +pathname="" */>)[[:space:]]*$|\1--> \2 <!--|g'
-
-# Clear work directory on restart
-filevar_set_var %{tomcatconf} CLEAR_WORK "true"
-
-# Set various Java runtime properties
-CATALINA_OPTS=""
-
-# Calculate %{heappct}% of available memory
-TOTAL_MEM=`free -b | sed -nr 's/^Mem:[[:space:]]*([0-9]+).*/\1/gp'`
-HEAP_MEM=`expr \( "${TOTAL_MEM}" \* %{heappct} \) / 100`
-
-# Configure max heap
-CATALINA_OPTS="${CATALINA_OPTS} -Xmx${HEAP_MEM}"
-
-# Avoid AWT weirdness
-CATALINA_OPTS="${CATALINA_OPTS} -Djava.awt.headless=true"
-
-# Apply properties
-filevar_set_var %{tomcatconf} CATALINA_OPTS "${CATALINA_OPTS}"
-
-# Ensure stdout/stderr ends up in catalina.out
-if [ -f '%{tomcatsysd}' ]; then
-    sed_patch_file %{tomcatsysd} -r 's|^( *org.apache.catalina.startup.Bootstrap start)$|\1 \\\
-        >> ${CATALINA_BASE}/logs/catalina.out 2>\&1|g'
-fi
+# Patch context.xml
+xml_patch_file '%{contextxml}' '%{pkgdir}/xsl/context-patch.xsl'
 
 # Enable tomcat
 systemctl -q enable tomcat.service
@@ -139,4 +156,9 @@ if systemctl is-active apache2.service >/dev/null; then
 fi
 
 %files
-%attr(644,root,root) %{servincdir}/*
+%defattr(644,root,root,755)
+%{servincdir}/*
+%{tomcatsvc}.d
+%{tomconfdir}/*
+%{logrotated}/*
+%{pkgdir}

@@ -50,15 +50,19 @@ PermitRootLogin no
 UseDNS no
 TCPKeepAlive yes
 ChallengeResponseAuthentication no
-ClientAliveInterval 20
+ClientAliveInterval 9
 ClientAliveCountMax 3
+MaxSessions 500
+MaxStartups 25:20:100
 xxEOFxx
 
-# Avoid conflicting parameters for 'UsePAM', etc.
+# Avoid conflicting parameters for 'PermitRootLogin', etc.
+# Restore original "UsePAM yes" which was previously set to "no"
 sed_patch_file %{sshd_config} -r \
-  -e 's/^(UsePAM[[:space:]]+)yes/\1no/g' \
+  -e 's/^(UsePAM[[:space:]]+)no/\1yes/g' \
   -e 's/^(PermitRootLogin[[:space:]]+)yes/\1no/g' \
-  -e 's/^(PasswordAuthentication[[:space:]]+)yes/\1no/g'
+  -e 's/^(PasswordAuthentication[[:space:]]+)yes/\1no/g' \
+  -e 's/^(ChallengeResponseAuthentication[[:space:]]+)yes/\1no/g'
 
 # Ensure SSH service is enabled
 systemctl enable sshd.service

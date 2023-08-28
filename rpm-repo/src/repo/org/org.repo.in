@@ -2,7 +2,8 @@
 name=@ORG_NAME@ RPM repository (@osname@ @osrel@)
 type=rpm-md
 baseurl=https://@URL_AUTH_PREFIX@@REPO_HOST@@REPO_URLPATH@/@osrel@/
-gpgcheck=0
+gpgcheck=1
+gpgkey=https://@URL_AUTH_PREFIX@@REPO_HOST@@REPO_URLPATH@/@osrel@/repodata/@ORG_ID@-repo.key
 enabled=1
 autorefresh=1
 keeppackages=0

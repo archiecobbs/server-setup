@@ -16,14 +16,48 @@ set_rpm_variables()
     RPM_PACKAGE_RELEASE="$3"
 }
 
+#
+# Function that transforms an XML file using xsltproc(1).
+#
+# Arguments:
+#   1. Target XML file (required)
+#   2. XSLT transform (required; only version 1.0 supported)
+#   3. Any additional flag(s) to xsltproc(1) (optional)
+#
+xml_patch_file()
+{
+    # Get target and XSLT file
+    FILE="${1}"
+    shift
+    if ! [ -f "${FILE}" ]; then
+        echo "xml_patch_file: target file \"${FILE}\" not found" 2>&1
+        return
+    fi
+    XSLT="${1}"
+    shift
+    if ! [ -f "${XSLT}" ]; then
+        echo "xml_patch_file: transform file \"${XSLT}\" not found" 2>&1
+        return
+    fi
+
+    # Apply transform
+    if ! xsltproc --nomkdir --nonet --nowrite ${1+"$@"} "${XSLT}" "${FILE}" > "${FILE}".new; then
+        echo "xml_patch_file: error patching `basename ${FILE}`; patch not applied!" 1>&2
+    elif ! diff -q "${FILE}" "${FILE}".new >/dev/null; then
+        cat "${FILE}".new > "${FILE}"
+    fi
+    rm -f "${FILE}".new
+}
+
 # Function that patches a file using sed(1).
 # First argument is filename, subsequent arguments are passed to sed(1).
 sed_patch_file()
 {
     FILE="${1}"
     shift
-    sed ${1+"$@"} < "${FILE}" > "${FILE}".new
-    if ! diff -q "${FILE}" "${FILE}".new >/dev/null; then
+    if ! sed ${1+"$@"} < "${FILE}" > "${FILE}".new; then
+        echo "sed_patch_file: error patching `basename ${FILE}`; patch not applied!" 1>&2
+    elif ! diff -q "${FILE}" "${FILE}".new >/dev/null; then
         cat "${FILE}".new > "${FILE}"
     fi
     rm "${FILE}".new
@@ -36,10 +70,11 @@ filevar_set_var()
 {
     FILE="${1}"
     VAR="${2}"
-    VAL=`echo "${3}" | sed -r 's/@/\\\\@/g'`
+    VAL="${3}"
+    PVAL=`echo "${VAL}" | sed -r -e 's/\\\\/\\\\\\\\/g' -e 's/@/\\\\@/g'`
     PAT='^('${VAR}'=)"?([^"]*)"?[[:space:]]*$'
     if grep -qE "${PAT}" "${FILE}"; then
-        sed_patch_file "${FILE}" -r 's@'"${PAT}"'@\1"'"${VAL}"'"@g'
+        sed_patch_file "${FILE}" -r 's@'"${PAT}"'@\1"'"${PVAL}"'"@g'
     else
         printf '#\n# added by %s-%s-%s\n%s="%s"\n' \
           "${RPM_PACKAGE_NAME}" "${RPM_PACKAGE_VERSION}" "${RPM_PACKAGE_RELEASE}" \
@@ -52,14 +87,15 @@ filevar_add_var()
 {
     FILE="${1}"
     VAR="${2}"
-    VAL=`echo "${3}" | sed -r 's/@/\\\\@/g'`
+    VAL="${3}"
+    PVAL=`echo "${VAL}" | sed -r -e 's/\\\\/\\\\\\\\/g' -e 's/@/\\\\@/g'`
     PAT1='^('${VAR}'=)(""|)[[:space:]]*$'
     PAT2='^('${VAR}'=)"?([^"]+)"?[[:space:]]*$'
     if grep -qE "${PAT1}" "${FILE}"; then
-        sed_patch_file "${FILE}" -r 's@'"${PAT1}"'@\1"'"${VAL}"'"@g'
+        sed_patch_file "${FILE}" -r 's@'"${PAT1}"'@\1"'"${PVAL}"'"@g'
     elif grep -qE "${PAT2}" "${FILE}"; then
         if ! cat "${FILE}" | grep -E "${PAT2}" | sed -r 's@'"${PAT2}"'@\2@g' | grep -qwF -- "${VAL}"; then
-            sed_patch_file "${FILE}" -r 's@'"${PAT2}"'@\1"'"\2 ${VAL}"'"@g'
+            sed_patch_file "${FILE}" -r 's@'"${PAT2}"'@\1"'"\2 ${PVAL}"'"@g'
         fi
     else
         printf '#\n# added by %s-%s-%s\n%s="%s"\n' \
@@ -73,10 +109,11 @@ filevar_set_var_noquote()
 {
     FILE="${1}"
     VAR="${2}"
-    VAL=`echo "${3}" | sed -r 's/@/\\\\@/g'`
-    PAT='^('${VAR}'=)"?([^"]*)"?[[:space:]]*$'
+    VAL="${3}"
+    PVAL=`echo "${VAL}" | sed -r -e 's/\\\\/\\\\\\\\/g' -e 's/@/\\\\@/g'`
+    PAT='^#?('${VAR}'=)"?([^"]*)"?[[:space:]]*$'
     if grep -qE "${PAT}" "${FILE}"; then
-        sed_patch_file "${FILE}" -r 's@'"${PAT}"'@\1'"${VAL}"'@g'
+        sed_patch_file "${FILE}" -r 's@'"${PAT}"'@\1'"${PVAL}"'@g'
     else
         printf '#\n# added by %s-%s-%s\n%s=%s\n' \
           "${RPM_PACKAGE_NAME}" "${RPM_PACKAGE_VERSION}" "${RPM_PACKAGE_RELEASE}" \
@@ -174,11 +211,16 @@ update_blurb()
     fi
 }
 
+#
 # Function to remove the RPM-specific section of a file previously added via update_blurb
 # Use it in a %preun section like this:
 #
 #   %preun
-#   set_rpm_variables '%{name}' '%{version}' '%{release}'
+#
+#   # Load handy scripts
+#   . %{_datadir}/%{org_id}-rpm-scripts/rpm-scripts '%{name}' '%{version}' '%{release}'
+#
+#   # Remove blurb on uninstall
 #   if [ "$1" -eq 0 ]; then
 #       remove_blurb FILENAME
 #   fi
@@ -232,6 +274,104 @@ do_if_running()
     fi
     if systemctl -q is-active "${SERVICE}"; then
         systemctl "${OPERATION}" "${SERVICE}"
+    fi
+}
+
+# Function to create/update a system user
+update_user()
+{
+    U_USERNAME="${1}"
+    U_GROUPNAMES="${2}"
+    U_HOME="${3:-/home/${U_USERNAME}}"
+    U_SHELL="${4:-/sbin/nologin}"
+    U_CRYPTED="*"
+
+    if [ ! -d "${U_HOME}" ]; then
+        MFLAG="-m"
+    else
+        MFLAG=""
+    fi
+    if ! id "${U_USERNAME}" >/dev/null 2>&1; then
+        echo "*** Creating user ${U_USERNAME}"
+        CMD="useradd"
+    else
+        CMD="usermod"
+    fi
+    ${CMD} -p "${U_CRYPTED}" -G "${U_GROUPNAMES}" ${MFLAG} -d "${U_HOME}" -s "${U_SHELL}" "${U_USERNAME}"
+}
+
+# Function to remove a system user
+remove_user()
+{
+    U_USERNAME="${1}"
+
+    # Get home directory
+    HOMEDIR=$(getent passwd "${U_USERNAME}" | awk -F: '{ print $6 }')
+
+    # Remove account
+    echo "*** Removing account for user ${U_USERNAME}"
+    userdel "${U_USERNAME}" 2>/dev/null || true
+
+    # Remove home directory if empty, otherwise chown to root
+    SKEL=$(useradd -D | sed -nr 's/^SKEL=(.*)$/\1/gp')
+    if diff -urq \
+      --exclude=.bash_history \
+      --exclude=.bashrc \
+      --exclude=.emacs \
+      --exclude=.inputrc \
+      --exclude=.profile \
+      --exclude=.ssh \
+      --exclude=.vimrc \
+      "${SKEL}" "${HOMEDIR}" >/dev/null; then
+        echo "*** Removing empty homedir for user ${U_USERNAME}"
+        rm -rf "${HOMEDIR}"
+    else
+        echo "*** NOTE: user ${U_USERNAME} left a non-empty homedir (will be owned by root)"
+        chown -R root:root "${HOMEDIR}"
+    fi
+}
+
+# Function to remove system users in given system group, but not in given list (one username per line)
+remove_old_users()
+{
+    U_GROUPNAME="${1}"
+    U_USERS_FILE="${2}"
+
+    # Delete any users in group who no longer have accounts
+    getent group "${U_GROUPNAME}" | awk -F: '{ printf "%s,", $4 }' | while read -d, USERNAME; do
+
+        # Sanity check
+        if [ -z "${USERNAME}" ]; then
+            continue
+        fi
+
+        # Is user still here?
+        if grep -qE '^'"${USERNAME}"'([[:space:]].*|)$' "${U_USERS_FILE}"; then
+            continue
+        fi
+
+        # Remove user
+        remove_user "${USERNAME}"
+    done
+}
+
+# Function to create/update a system group
+update_group()
+{
+    G_NAME="${1}"
+    if ! getent group "${G_NAME}" >/dev/null 2>&1; then
+        echo "*** Creating group ${G_NAME}"
+        groupadd "${G_NAME}"
+    fi
+}
+
+# Function to remove a system group
+remove_group()
+{
+    G_NAME="${1}"
+    if ! getent group "${G_NAME}" >/dev/null 2>&1; then
+        echo "*** Removing group ${G_NAME}"
+        groupdel "${G_NAME}" 2>/dev/null || true
     fi
 }
 
