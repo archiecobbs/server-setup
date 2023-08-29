@@ -91,7 +91,6 @@ subst()
 
 # Compile utilities
 cc -o setpin -Wall -Werror -DOTP_PIN_FILE='"%{otppinfile}"' sources/setpin.c
-cc -o genotpurl -Wall -Werror -DDEFAULT_ISSUER='"%{org_name}"' sources/{base32,genotpurl}.c
 
 # Substitute @variables@
 subst < scripts/genkey.sh > scripts/genkey
@@ -133,7 +132,7 @@ install -m 0600 /dev/null %{buildroot}%{otppinfile}
 # Scripts and utilities
 install -d -m 0755 %{buildroot}%{_bindir}
 install -m 0755 scripts/genkey %{buildroot}%{_bindir}/genkey
-install -m 0755 setpin genotpurl %{buildroot}%{_bindir}/
+install -m 0755 setpin %{buildroot}%{_bindir}/
 
 # Proxy auth file
 install -m 0644 /dev/null %{buildroot}%{proxpwfile}
