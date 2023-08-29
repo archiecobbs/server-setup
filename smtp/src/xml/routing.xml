@@ -9,6 +9,7 @@
     <!-- SMTP server information -->
     <server hostname="smtp.example.com"/>
     <local domain="example.com"/>
+    <localhostOnly>true</localhostOnly>
 
     <!-- Who does root email forward to -->
     <root user="dilbert"/>

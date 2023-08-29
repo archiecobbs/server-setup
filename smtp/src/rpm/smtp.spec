@@ -54,7 +54,7 @@ printf 'tls_advertise_hosts = *\n' >> exim-main
 printf 'tls_certificate = %%s\n' '%{pkgdir}/ssl.crt' >> exim-main
 printf 'tls_privatekey = %%s\n' '%{pkgdir}/ssl.key' >> exim-main
 NUM_DOMAINS=`xmlfind / 'count(/routing/domain)'`
-if [ "${NUM_DOMAINS}" -eq 0 ]; then
+if [ "${NUM_DOMAINS}" -eq 0 -o `xmlfind /routing/localhostOnly .` = 'true' ] ; then
     printf 'local_interfaces = 127.0.0.1\n' >> exim-main
 fi
 printf '\n' >> exim-main
