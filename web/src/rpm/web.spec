@@ -35,7 +35,11 @@
 %define proxpwfile  %{pkgdir}/proxy-auth.txt
 
 # modules
-%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp proxy proxy_http proxy_connect
+%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp proxy proxy_http proxy_connect evasive24
+
+# Rate limiting with mod_evasive
+%define modevconf   %{apconfdir}/mod_evasive.conf
+%define maxreqps    25
 
 # exim
 %define eximdir     %{_datadir}/%{org_id}-smtp
@@ -56,6 +60,7 @@ Requires:           %{org_id}-web-certs >= %{version}
 Requires(post):     %{org_id}-rpm-scripts
 Requires(pre):      apache2 >= 2.4.6
 Requires:           apache2-mod_authn_otp >= 1.1.5
+Requires(post):     apache2-mod_evasive
 Requires:           mod_php_any
 
 %description
@@ -155,6 +160,9 @@ done
 
 # Disable port 80
 sed_patch_file %{listenconf} -r 's/^(Listen[[:space:]]+80[[:space:]]*)$/#\1/g'
+
+# Tweak mod_evasive params
+sed_patch_file '%{modevconf}' -r 's/^([[:space:]]*DOSPageCount[[:space:]]+)[0-9]+[[:space:]]*$/\1%{maxreqps}/g'
 
 # Enable and reload apache
 systemctl enable apache2.service
