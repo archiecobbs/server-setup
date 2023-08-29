@@ -25,7 +25,7 @@
 %define tomcatsvc   %{_usr}/lib/systemd/system/tomcat.service
 %define maxheap     4g
 
-# %{org_id}-web RPM config file include directory
+# RPM config file include directory
 %define servincdir  %{_datadir}/%{org_id}-web/apache
 
 Name:               %{org_id}-tomcat

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <project name="default-build"
   default="build"
@@ -51,7 +51,7 @@
     <target name="publish" depends="build">
         <antcontrib:for list="${build.os.versions}" param="osver" trim="true">
             <sequential>
-                <dellroad:rpmdist repohost="${rpm.repo.host}" repodir="${rpm.repo.dir}"
+                <dellroad:rpmdist repodir="${rpm.repo.dir}"
                   osname="${build.os.name}" osrel="@{osver}" purge="true"/>
             </sequential>
         </antcontrib:for>

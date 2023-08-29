@@ -735,7 +735,7 @@
                             if ! gpg2 --list-keys '@{signkey}' 2>/dev/null; then
                                 echo &quot;Error: RPM signing key '@{signkey}' not found&quot; 1&gt;&amp;2;
                                 exit 1;
-                            fi
+                            fi;
                             find build/rpm/RPMS -name '*.rpm' -newer build/timestamp.rpmbuild -print | sed 's/^/    /';
                             sleep 0.2;
                             find build/rpm/RPMS -name '*.rpm' -newer build/timestamp.rpmbuild -print0
@@ -909,7 +909,7 @@
                                 if ! gpg2 --list-keys '@{signkey}' 2>/dev/null; then
                                     echo &quot;Error: RPM signing key '@{signkey}' not found&quot; 1&gt;&amp;2;
                                     exit 1;
-                                fi
+                                fi;
                                 umask 002;
                                 rm -f '@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata/repomd.xml.asc';
                                 gpg2 -sabq --default-key '@{signkey}'
@@ -931,9 +931,9 @@
                 <arg value="
                     set -e;
                     if [ -z '@{repohost}' -o '@{repohost}' = `cat /etc/hostname` ]; then
-                        chmod g+w '@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/repodata';
+                        chmod g+w '@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata';
                     else
-                        ssh '@{repohost}' chmod g+w \''@{repodir}/${_rpmdist.osver.@{osname}@{osrel}}/repodata'\';
+                        ssh '@{repohost}' chmod g+w \''@{repodir}/${_rpmdist.osrel.@{osrel}}/repodata'\';
                     fi;
                 "/>
             </exec>

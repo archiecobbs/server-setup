@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet href="accounts.xsl" type="text/xsl"?>
 
 <accounts>
@@ -34,6 +34,8 @@
 
     At most one shell account tag may appear in a privilege; otherwise, tags must appear in the above order.
 
+    Note the "rpmrepo" UNIX group allows you to publish RPM's to the RPM repository.
+
     Each <privilege> has three required attributes:
 
         o The "name" which must be unique
@@ -43,6 +45,9 @@
 
     <privilege name="all-account" machine-class="default" hosts=".*">
         <shellAccount/>
+    </privilege>
+    <privilege name="rpm-publishers" machine-class="default" hosts=".*">
+        <unixGroup name="rpmrepo"/>
     </privilege>
     <privilege name="all-superuser" machine-class="default" hosts=".*">
         <shellAccount/>
@@ -65,6 +70,7 @@
 
     <group groupname="sysadmins">
         <privilege name="all-superuser"/>
+        <privilege name="rpm-publishers"/>
         <privilege name="backups"/>
     </group>
     <group groupname="nagios-checkers">

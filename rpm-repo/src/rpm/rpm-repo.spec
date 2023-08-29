@@ -50,6 +50,42 @@ It defines the RPM repository directory layout under %{repo_dir}.
 
 %build
 
+# Verify RPM repo key exists
+if ! [ -f repo/org/%{org_id}-repo.key ]; then
+    cat << 'xxEOFxx'
+
+    *****************************************************************************************
+
+    You must first create an RPM repository package signing key. You can do this as follows:
+
+      gpg2 --quick-gen-key '%{org_name} Package Signing Key' - sign never
+
+    Supply a passphrase you will be comfortable typing every time you publish RPMs to the repo.
+
+    Then add the public key to this project so it can be published in the repo:
+
+      gpg2 --export -a '%{org_name} Package Signing Key' > ./src/repo/org/%{org_id}-repo.key
+      git add ./src/repo/org/%{org_id}-repo.key
+      git comit -m 'Add RPM Package Signing Key'
+
+    To provide this key to any others who will also sign packages:
+
+      gpg2 --export-secret-keys -a '%{org_name} Package Signing Key' > %{org_id}-repo-secret.key
+
+    You will have to enter your passphrase to decrypt the key. The exported file is sensitive
+    so you be careful to prevent anyone else from accessing it.
+
+    The recipient would then import the key like this:
+
+      gpg2 --import %{org_id}-repo-secret.key
+
+    They will also have to enter a passphrase and also their own new passphrase.
+
+    *****************************************************************************************
+xxEOFxx
+    exit 1
+fi
+
 # Load repo username & password function
 . scripts/repo-gen.sh '%{org_name}' '%{org_id}' '%{repo_host}' '%{repo_urlpath}' '%{?repo_pass}'
 
@@ -92,9 +128,11 @@ printf '\n' >> repo.properties
 # Create repository directory layout
 install -d %{buildroot}%{repo_dir}
 for OS_REL in `echo %{os_versions} | tr , ' '`; do
-    install -d -m 0755 %{buildroot}%{repo_dir}/"${OS_REL}"
-    install -d -m 0755 %{buildroot}%{repo_dir}/"${OS_REL}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
-    install -m 0644 repo/"${OS_REL}"/%{org_id}.repo %{buildroot}%{repo_dir}/"${OS_REL}"/
+    REPODIR="%{buildroot}/%{repo_dir}/${OS_REL}"
+    install -d -m 0755 "${REPODIR}"
+    install -d -m 0755 "${REPODIR}"/{i{3,5}86,x86_64,noarch,src,repodata,cache}
+    install -m 0644 repo/"${OS_REL}"/%{org_id}.repo "${REPODIR}"/
+    install -m 0644 repo/org/%{org_id}-repo.key "${REPODIR}"/repodata/
 done
 
 # Properties file

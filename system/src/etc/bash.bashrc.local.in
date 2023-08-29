@@ -171,6 +171,10 @@ function tz() {
     gunzip < ${1+"$@"} | less
 }
 
+function xt() {
+    xzcat ${1+"$@"} | less
+}
+
 # Zypper stuff
 
 function zh() {
@@ -188,7 +192,7 @@ alias ,='cd -'
 # Git bash completion (if installed)
 _GIT_PROMPT_STUFF=""
 if [ -f /etc/bash_completion.d/git-prompt.sh ]; then
-    . /etc/bash_completion.d/git-prompt.sh
+    source /etc/bash_completion.d/git-prompt.sh
     GIT_PS1_SHOWDIRTYSTATE="true"
     GIT_PS1_SHOWSTASHSTATE="true"
     GIT_PS1_SHOWUNTRACKEDFILES="true"
@@ -206,6 +210,15 @@ _PROMPT_SITE_COLOR=""
 _PROMPT_USER_RESET=""
 _PROMPT_SITE_RESET=""
 _PROMPT_TAB_TITLE=`cat /etc/hostname | tr -d \\\\n | ( echo -ne '\e]1;'; cat; echo -ne '\a')`
+
+# Set window title
+title()
+{
+    echo -n "${_PROMPT_TAB_TITLE}"
+}
+if [ -n "${PS1}" ]; then
+    title
+fi
 
 # Get color sequences for prompt
 if [ `id -u` -eq 0 ]; then

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <!--
     This extract inline <dellroad-stuff:sql-update> schema updates from a Spring XML file into an SQL script.

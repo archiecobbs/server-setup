@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 
-    <xsl:output method="html" indent="yes" encoding="ISO-8859-1" media-type="text/html"/>
+    <xsl:output method="html" indent="yes" encoding="utf-8" media-type="text/html"/>
 
     <xsl:template match="/accounts">
         <html>

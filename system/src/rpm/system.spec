@@ -85,6 +85,7 @@ Requires:           vim-data
 Requires:           wget
 Requires:           xmlstarlet
 Requires:           zip
+Obsoletes:          rsyslog
 
 # %{org_id} stuff
 Requires:           %{org_id}-sshd
@@ -110,7 +111,7 @@ sed -r \
 
 %install
 install -m 0755 -d %{buildroot}%{_sysconfdir}
-install -m 0644 etc/bash.bashrc.local %{buildroot}%{_sysconfdir}/
+install -m 0644 bash.bashrc.local %{buildroot}%{_sysconfdir}/
 install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/bash_completion
 install -m 0755 -d %{buildroot}%{bashrcdir}
 
