@@ -12,6 +12,7 @@
 %define pkgdir      %{_datadir}/%{name}
 %define webpkgdir   %{_datadir}/%{org_id}-web
 %define eximconf    %{_sysconfdir}/exim/exim.conf
+%define crondir     %{_sysconfdir}/cron.d
 
 # Required version
 %define eximver     4.80
@@ -163,6 +164,13 @@ done
 # Static blurbs
 install -m 0644 blurbs/exim-spam-rcpt %{buildroot}/%{pkgdir}/
 
+# Reload exim every 30 days to get TLS certificate updates
+install -d -m 0755 %{buildroot}%{crondir}
+cat > %{buildroot}%{crondir}/%{name}.cron << xxEOFxx
+# Restart exim(8) after renewing SSL certificates 6am on the 1st of the month
+0 6 1 * * root %{_bindir}/systemctl try-restart exim.service
+xxEOFxx
+
 %post
 
 # Read scripts
@@ -189,6 +197,7 @@ fi
 
 %files
 %defattr(0644,root,root,0755)
+%{crondir}/*
 %attr(0600,mail,mail) %{pkgdir}/authdb
 %{pkgdir}
 /root/.forward
