@@ -17,9 +17,9 @@
 %define apconfig    %{_sysconfdir}/sysconfig/apache2
 %define apconfdir   %{apachedir}/conf.d
 %define publicroot  /srv/www
-%define ssldir      %{pkgdir}/ssl
-%define sslcrtfile  %{ssldir}/ssl.crt
-%define sslkeyfile  %{ssldir}/ssl.key
+%define sslfiledir  %{pkgdir}/ssl
+%define sslcrtfile  %{sslfiledir}/ssl.crt
+%define sslkeyfile  %{sslfiledir}/ssl.key
 %define mydomain    %{org_domain}
 %define serveremail support@%{mydomain}
 %define servincdir  %{pkgdir}/apache
@@ -52,6 +52,7 @@ BuildRoot:          %{_tmppath}/%{name}-root
 Buildarch:          noarch
 URL:                http://%{org_domain}/
 BuildRequires:      xsltproc
+Requires:           %{org_id}-web-certs >= %{version}
 Requires(post):     %{org_id}-rpm-scripts
 Requires(pre):      apache2 >= 2.4.6
 Requires:           apache2-mod_authn_otp >= 1.1.5
@@ -84,6 +85,7 @@ subst()
         -e 's|@publicroot@|%{publicroot}|g' \
         -e 's|@serveremail@|%{serveremail}|g' \
         -e 's|@servincdir@|%{servincdir}|g' \
+        -e 's|@sslfiledir@|%{sslfiledir}|g' \
         -e 's|@sslcrtfile@|%{sslcrtfile}|g' \
         -e 's|@sslkeyfile@|%{sslkeyfile}|g' \
         -e 's|@web_hostname@|%{web_hostname}|g'
@@ -115,14 +117,14 @@ install -d -m 0755 %{buildroot}%{servincdir}
 install -m 0644 apache/%{name}.conf %{buildroot}%{apconfdir}/
 
 # SSL files
-install -d -m 0755 %{buildroot}%{ssldir}
-install -m 600 certbot/live/%{web_hostname}/privkey.pem %{buildroot}%{sslkeyfile}
-install certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{sslcrtfile}
+install -d -m 0755 %{buildroot}%{sslfiledir}
+install -m 0600 certbot/live/%{web_hostname}/privkey.pem   %{buildroot}%{sslkeyfile}
+install -m 0644 certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{sslcrtfile}
 
 # Exim's copy
 install -d -m 0755 %{buildroot}%{eximdir}
-install -m 600 certbot/live/%{web_hostname}/privkey.pem %{buildroot}%{eximdir}/ssl.key
-install certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{eximdir}/ssl.crt
+install -m 0600 certbot/live/%{web_hostname}/privkey.pem   %{buildroot}%{eximdir}/ssl.key
+install -m 0644 certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{eximdir}/ssl.crt
 
 # OTP directory, OTP users file, and encrypted PINs
 install -d -m 0755 %{buildroot}%{otpdir}
@@ -165,9 +167,6 @@ systemctl try-restart apache2.service
 %dir %attr(700,wwwrun,www) %{otpdir}
 %dir %{pkgdir}
 %{publicroot}/*
-%dir %{ssldir}
-%attr(644,wwwrun,www) %{sslcrtfile}
-%attr(400,wwwrun,www) %{sslkeyfile}
 %attr(644,mail,mail) %{eximdir}/ssl.crt
 %attr(400,mail,mail) %{eximdir}/ssl.key
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
@@ -175,4 +174,23 @@ systemctl try-restart apache2.service
 %attr(640,root,www) %config(noreplace) %{proxpwfile}
 %attr(755,root,root) %{_bindir}/genkey
 %attr(4755,root,root) %{_bindir}/setpin
-%attr(755,root,root) %{_bindir}/genotpurl
+
+%package        certs
+Summary:        %{org_name} SSL certificates
+Group:          System/Setup
+Buildarch:      noarch
+
+%description certs
+%{summary}.
+
+%post certs
+
+# Reload Apache
+if systemctl -q is-active apache2.service; then
+    systemctl reload-or-try-restart apache2.service
+fi
+
+%files certs
+%attr(755,root,root) %dir %{sslfiledir}
+%attr(600,root,root) %{sslkeyfile}
+%attr(644,root,www) %{sslcrtfile}
