@@ -31,7 +31,7 @@ Requires:           antlr
 Requires:           ctags
 Requires:           findutils-locate
 Requires:           git
-Requires:           ivy
+Requires:           apache-ivy >= 2.4.0
 Requires:           java-devel-openjdk >= 1.8.0
 Requires:           libxslt
 Requires:           rpm
