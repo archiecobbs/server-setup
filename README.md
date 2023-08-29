@@ -45,21 +45,22 @@ To get started:
 * Customize settings by editing `build.properties`
 * Install some packages:
 ```
-$ zypper -v in ant ant-contrib ant-apache-xalan2-j2 apache2-utils apache-ivy createrepo_c git libxslt-tools openssl rpm-build xalan
+zypper -v in ant ant-contrib ant-apache-xalan2-j2 apache2-utils apache-ivy \
+    createrepo_c git libxslt-tools openssl rpm-build xalan
 ```
   * Install RPM scripts:
 ```
-$ ( cd rpm-scripts && ant -Dnosign=true install )
+( cd rpm-scripts && ant -Dnosign=true install )
 ```
   * Create your RPM package signing key:
 ```
-$ ( cd rpm-repo && ant )
+( cd rpm-repo && ant )
 # Follow instructions in error message to create signing key
-$ ( cd rpm-repo && ant install )
+( cd rpm-repo && ant install )
 ```
   * Configure and install your users:
 ```
-$ vi users/src/xml/accounts.xml
-$ ( cd users && ant install )
+vi users/src/xml/accounts.xml
+( cd users && ant install )
 ```
   * Pick and choose what other RPMs you'd like, then build, install and/or publish to RPM repo
