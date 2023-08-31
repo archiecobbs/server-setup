@@ -22,7 +22,6 @@
 %define contextxml  %{_sysconfdir}/tomcat/context.xml
 %define tomcatconf  %{_sysconfdir}/tomcat/tomcat.conf
 %define logrotated  %{_sysconfdir}/logrotate.d
-%define tomcatsvc   %{_usr}/lib/systemd/system/tomcat.service
 %define maxheap     4g
 
 # RPM config file include directory
@@ -34,7 +33,7 @@ Release:            1.%{osname}%{osrel}
 Summary:            %{org_name} Setup for Tomcat (%{osname}%{osrel})
 License:            Apache-2.0
 Distribution:       %{org_name} Server Setup
-Source:             %{name}.zip
+Source:             source.zip
 BuildRoot:          %{_tmppath}/%{name}-root
 Buildarch:          noarch
 URL:                http://%{org_domain}/
@@ -158,7 +157,6 @@ fi
 %files
 %defattr(644,root,root,755)
 %{servincdir}/*
-%{tomcatsvc}.d
 %{tomconfdir}/*
 %{logrotated}/*
 %{pkgdir}
