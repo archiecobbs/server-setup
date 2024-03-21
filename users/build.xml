@@ -11,7 +11,8 @@
 
     <!-- Read machine classes -->
     <target name="machine.classes" unless="machine.classes">
-        <xslt style="src/xsl/machine-classes.xsl" in="src/xml/accounts.xml" out="build/machine-classes.properties"/>
+        <xslt style="src/xsl/machine-classes.xsl" classpath="/usr/share/java/jaxp_transform_impl.jar"
+          in="src/xml/accounts.xml" out="build/machine-classes.properties"/>
         <property file="build/machine-classes.properties"/>
     </target>
 
@@ -50,8 +51,8 @@
         <!-- Generate spec files -->
         <antcontrib:for list="${machine.classes}" trim="true" param="machine.class">
             <sequential>
-                <xslt style="src/xsl/spec.xsl" in="src/xml/accounts.xml"
-                  out="build/${org.id}-${ant.project.name}-@{machine.class}.spec">
+                <xslt style="src/xsl/spec.xsl" classpath="/usr/share/java/jaxp_transform_impl.jar"
+                  in="src/xml/accounts.xml" out="build/${org.id}-${ant.project.name}-@{machine.class}.spec">
                     <param name="machine-classes" expression="${machine.classes}"/>
                     <param name="machine-class" expression="@{machine.class}"/>
                     <param name="this" expression="${ant.project.name}"/>

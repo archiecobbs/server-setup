@@ -66,7 +66,7 @@ if ! [ -f repo/org/%{org_id}-repo.key ]; then
 
       gpg2 --export -a '%{org_name} Package Signing Key' > ./src/repo/org/%{org_id}-repo.key
       git add ./src/repo/org/%{org_id}-repo.key
-      git comit -m 'Add RPM Package Signing Key'
+      git commit -m 'Add RPM Package Signing Key'
 
     To provide this key to any others who will also sign packages:
 

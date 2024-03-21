@@ -1222,7 +1222,8 @@
 
                     <!-- Style XML report -->
                 <!--
-                    <xslt in="@{dir}/report.xml" out="@{dir}/report.out" style="@{style}">
+                    <xslt style="@{style}" classpath="/usr/share/java/jaxp_transform_impl.jar"
+                      in="@{dir}/report.xml" out="@{dir}/report.out">
                         <param name="title" expression="@{title}"/>
                         <param name="filename.strip.prefix" expression="${basedir}/"/>
                     </xslt>
@@ -1232,7 +1233,8 @@
                     <antcontrib:if>
                         <isset property="checkstyle.failed"/>
                         <antcontrib:then>
-                            <xslt style="@{textstyle}" in="@{dir}/report.xml" out="/dev/stdout">
+                            <xslt style="@{textstyle}" classpath="/usr/share/java/jaxp_transform_impl.jar"
+                              in="@{dir}/report.xml" out="/dev/stdout">
                                 <param name="failed" expression="true"/>
                                 <param name="filename.strip.prefix" expression="${basedir}/"/>
                                 <param name="show.warnings" expression="@{showWarnings}"/>
@@ -1240,7 +1242,8 @@
                             <fail message="checkstyle failed"/>
                         </antcontrib:then>
                         <antcontrib:else>
-                            <xslt style="@{textstyle}" in="@{dir}/report.xml" out="/dev/stdout">
+                            <xslt style="@{textstyle}" classpath="/usr/share/java/jaxp_transform_impl.jar"
+                              in="@{dir}/report.xml" out="/dev/stdout">
                                 <param name="failed" expression="false"/>
                                 <param name="filename.strip.prefix" expression="${basedir}/"/>
                                 <param name="show.warnings" expression="@{showWarnings}"/>
@@ -1304,7 +1307,8 @@
                 </sourcefiles>
                 <targetfiles path="@{dir}/index.html"/>
                 <sequential>
-                    <xslt style="@{location}/src/xsl/@{style}.xsl" in="@{dir}/report.xml" out="@{dir}/index.html"/>
+                    <xslt style="@{location}/src/xsl/@{style}.xsl" classpath="/usr/share/java/jaxp_transform_impl.jar"
+                      in="@{dir}/report.xml" out="@{dir}/index.html"/>
                 </sequential>
             </antcontrib:outofdate>
         </sequential>
@@ -1469,7 +1473,7 @@
         <tstamp>
             <format property="current.time" pattern="EEEE dd MMM yyyy HH:mm:ss"/>
         </tstamp>
-        <xslt style="${build.macros.dir}/reports-index.xsl"
+        <xslt style="${build.macros.dir}/reports-index.xsl" classpath="/usr/share/java/jaxp_transform_impl.jar"
           in="${build.macros.dir}/reports-index.xsl" out="build/reports/index.html">
             <param name="basedir" expression="${basedir}"/>
             <param name="ant.project.name" expression="${ant.project.name}"/>
@@ -1522,7 +1526,7 @@
                 fi;
             "/>
         </exec>
-        <xslt style="${build.macros.dir}/checkstyle/cleanup.xsl"
+        <xslt style="${build.macros.dir}/checkstyle/cleanup.xsl" classpath="/usr/share/java/jaxp_transform_impl.jar"
           in="build/reports/checkstyle/report.xml" out="build/reports/checkstyle/cleanup.sh"/>
         <exec executable="/bin/bash" logError="true" failonerror="true">
             <arg value="-x"/>

@@ -45,22 +45,25 @@ To get started:
 * Customize settings by editing `build.properties`
 * Install some packages:
 ```
-zypper -v in ant ant-contrib ant-apache-xalan2-j2 apache2-utils apache-ivy \
-    createrepo_c git libxslt-tools openssl rpm-build xalan
+    $ zypper -v in ant ant-contrib apache2-utils apache-ivy \
+        createrepo_c git libxslt-tools openssl rpm-build saxon10
+    $ update-alternatives --set jaxp_transform_impl /usr/share/java/saxon10.jar
 ```
   * Install RPM scripts:
 ```
-( cd rpm-scripts && ant -Dnosign=true install )
+    $ ( cd rpm-scripts && ant -Dnosign=true install )
 ```
   * Create your RPM package signing key:
 ```
-( cd rpm-repo && ant )
-# Follow instructions in error message to create signing key
-( cd rpm-repo && ant install )
+    $ cd rpm-repo
+    $ ant
+    # Follow instructions in error message to create signing key
+    $ ant install
 ```
   * Configure and install your users:
 ```
-vi users/src/xml/accounts.xml
-( cd users && ant install )
+    $ cd ../users
+    $ vi users/src/xml/accounts.xml
+    $ ant install
 ```
   * Pick and choose what other RPMs you'd like, then build, install and/or publish to RPM repo
