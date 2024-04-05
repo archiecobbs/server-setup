@@ -13,6 +13,10 @@ RPM summary:
         Creates an RPM repository for publishing and distributing custom software.
         Makes the repository available via a password-protected HTTPS URL.
 
+    git-repos
+        Creates a directory for git repositories with UNIX group access control
+        and a script for creating new ones.
+
     rpm-scripts
         Contains a shell script defining shell functions that are handy for use
         by other RPM scriptlets.

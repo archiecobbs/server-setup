@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project name="git-repos"
+  default="build"
+  basedir="."
+  xmlns:dellroad="urn:org.dellroad.ant"
+  xmlns:antcontrib="urn:net.sf.antcontrib">
+
+    <!-- Use default build instructions -->
+    <import file="../default-build.xml"/>
+
+    <!-- Get git repo directory -->
+    <property name="build.extra.rpm.flags" value="--define 'repo_dir ${git.repo.dir}'"/>
+
+</project>
