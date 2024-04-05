@@ -149,7 +149,7 @@ find "${REPO_DIR}" -type d -print0 | xargs -0 chmod g+s
 if [ "${EMAIL_CONFIGURED}" = 'true' ]; then
     echo "${NAME}: configuring email notifications to \"${EMAIL_DEST}\"" 1>&2
     install -m 755 "${EMAIL_SCRIPT}" "${REPO_DIR}"/hooks/post-receive
-    printf '\n[multimailhook]\nrepoName = %s\n mailingList = %s\ncommitEmailFormat = html\nfrom = %s\n' \
+    printf '\n[multimailhook]\n\trepoName = %s\n\tmailingList = %s\n\tcommitEmailFormat = html\n\tfrom = %s\n' \
         "${EMAIL_PREFIX}" "${EMAIL_DEST}" "${EMAIL_FROM}" \
         >> "${REPO_DIR}"/config
 fi
