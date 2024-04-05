@@ -36,7 +36,7 @@ Requires:           java-devel-openjdk >= 1.8.0
 Requires:           libxslt
 Requires:           rpm
 Requires:           rpm-build
-Requires:           saxon9-scripts
+Requires:           saxon10-scripts
 Requires:           strace
 Requires:           xalan-j2
 Requires:           xerces-j2

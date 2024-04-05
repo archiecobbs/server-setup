@@ -11,7 +11,7 @@
 
     <!-- SSL cert info -->
     <property name="api.email" value="${org.contact}"/>
-    <property name="ssl.domain" value="${org.domain}"/>
+    <property name="ssl.domains" value="${web.hostname}"/>
 
     <!-- Pass extra flags to RPM build -->
     <property name="build.extra.rpm.flags" value="
@@ -50,10 +50,13 @@
                 trap &quot;rm -f $${TEMP}&quot; 0 2 3 5 10 13 15;
 
                 DOMAINS='';
-                for HOST in ${web.hostname}; do
-                    DOMAINS=&quot;$${DOMAINS} --domain $${HOST}&quot;;
+                for DOMAIN in ${ssl.domains}; do
+                    DOMAINS=&quot;$${DOMAINS} --domain $${DOMAIN}&quot;;
                 done;
 
+                echo '';
+                echo &quot;*** Issue/Renew Certificate for domain(s): ${ssl.domains}&quot;;
+                echo '';
                 certbot --verbose certonly
                   --agree-tos
                   --non-interactive
