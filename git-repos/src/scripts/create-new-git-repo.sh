@@ -142,7 +142,7 @@ git init --bare --shared=0660 "${REPO_DIR}"
 # Set permissions
 echo "${NAME}: setting directory permissions" 1>&2
 chgrp -R "${UNIX_GROUP}" "${REPO_DIR}"
-chmod -R g+rw "${REPO_DIR}"
+chmod -R g+rw,o-rwx "${REPO_DIR}"
 find "${REPO_DIR}" -type d -print0 | xargs -0 chmod g+s
 
 # Set up email notifications
