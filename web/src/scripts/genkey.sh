@@ -93,7 +93,7 @@ if [ "${SETUP}" = 'true' ]; then
 
     # Create random key and user to users.txt
     KEY=`head -c 20 /dev/random | openssl sha1 -r | cut -c 1-20`
-    grep -vE '^[^[:space:]]+[[:space:]]+'"${USERNAME}"'[[:space:]]' '@otpfile@' > '@otpfile@'.new
+    grep -vE '^[^[:space:]]+[[:space:]]+'"${USERNAME}"'[[:space:]]' '@otpfile@' > '@otpfile@'.new || true
     printf 'HOTP/T30 %s + %s\n' "${USERNAME}" "${KEY}" >> '@otpfile@'.new
     cat '@otpfile@'.new > '@otpfile@'
     rm -f '@otpfile@'.new
@@ -150,4 +150,3 @@ else
     # Generate token
     exec otptool -d "${TDIGITS}" -t -i "${TINTERVAL}" "${TKEY}" | awk '{ print $2 }'
 fi
-
