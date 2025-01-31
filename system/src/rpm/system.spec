@@ -23,7 +23,6 @@
 %define unservices  postfix
 
 %define roothome    /root
-%define rootfwd     %{roothome}/.forward
 %define rootvimrc   %{roothome}/.vimrc
 %define rootemail   root@%{org_domain}
 
@@ -115,11 +114,8 @@ install -m 0644 bash.bashrc.local %{buildroot}%{_sysconfdir}/
 install -m 0644 /dev/null %{buildroot}%{_sysconfdir}/bash_completion
 install -m 0755 -d %{buildroot}%{bashrcdir}
 
-# Root's .forward file
-install -d -m 0755 %{buildroot}%{roothome}
-echo '%{rootemail}' > %{buildroot}%{rootfwd}
-
 # Root's .vimrc file
+install -d -m 0755 `dirname %{buildroot}%{rootvimrc}`
 cat > %{buildroot}%{rootvimrc} << xxEOFxx
 se sw=4 ts=4 expandtab
 xxEOFxx
@@ -206,5 +202,4 @@ xxEOFxx
 %attr(644,root,root) %{_sysconfdir}/bash_completion
 %defattr(644,root,root,755)
 %{bashrcdir}
-%{rootfwd}
 %{rootvimrc}
