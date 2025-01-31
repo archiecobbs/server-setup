@@ -17,7 +17,7 @@
 %define bashrcdir   %{pkgdir}/bashrc
 %define localtime   %{_sysconfdir}/localtime
 %define dhcpconf    %{_sysconfdir}/sysconfig/network/dhcp
-%define jourconf    %{_sysconfdir}/systemd/journald.conf
+%define jrnconfmod  %{_sysconfdir}/systemd/journald.conf.d/%{name}
 %define services    ntpd systemd-journald sysstat
 %define zyppconf    %{_sysconfdir}/zypp/zypp.conf
 %define unservices  postfix
@@ -120,6 +120,18 @@ cat > %{buildroot}%{rootvimrc} << xxEOFxx
 se sw=4 ts=4 expandtab
 xxEOFxx
 
+# Systemd journal config
+install -d -m 0755 `dirname %{buildroot}%{jrnconfmod}`
+cat > %{buildroot}%{jrnconfmod} << xxEOFxx
+# This file is part of %{name}-%{version}-%{release}
+
+[Journal]
+Storage=persistent
+Compress=yes
+SystemMaxFileSize=10M
+SystemMaxFiles=50
+xxEOFxx
+
 %post
 
 # Read scripts
@@ -167,14 +179,6 @@ fi
 # Don't set hostname via DHCP
 filevar_set_var %{dhcpconf} DHCLIENT_SET_HOSTNAME "no"
 
-# Tweak journald.conf
-update_blurb %{jourconf} << 'xxEOFxx'
-Storage=persistent
-Compress=yes
-SystemMaxFileSize=10M
-SystemMaxFiles=50
-xxEOFxx
-
 # Enable and start/restart services
 for SERVICE in %{services}; do
     systemctl -q -f enable "${SERVICE}".service
@@ -203,3 +207,4 @@ xxEOFxx
 %defattr(644,root,root,755)
 %{bashrcdir}
 %{rootvimrc}
+%{jrnconfmod}
