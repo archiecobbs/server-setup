@@ -61,6 +61,7 @@ Requires(pre):      apache2 >= 2.4.6
 Requires:           apache2-mod_authn_otp >= 1.1.5
 Requires(post):     apache2-mod_evasive
 Requires:           mod_php_any
+Requires:           system-user-mail
 
 %description
 %{summary}.

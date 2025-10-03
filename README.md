@@ -64,6 +64,10 @@ To get started:
     # Follow instructions in error message to create signing key
     $ ant install
 ```
+  * Import your RPM package signing key:
+```
+    $ rpm --import /usr/share/*-zypper-repos/*-repo.key
+```
   * Configure and install your users:
 ```
     $ cd ../users
