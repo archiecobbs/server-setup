@@ -9,11 +9,7 @@ The HTTP server is configured as follows:
     Port 80
 
         /
-            Publically available
-            Serve static files from /srv/www
-
-        /private
-            Redirect to port 443 /private
+            Redirects all requests to port 443
 
         Addtional config in /usr/share/example-web/apache/*.port80.include
 

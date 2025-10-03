@@ -32,10 +32,9 @@
 %define otpdir      %{pkgdir}/otp
 %define otpfile     %{otpdir}/users.txt
 %define otppinfile  %{otpdir}/pin-htpasswd.txt
-%define proxpwfile  %{pkgdir}/proxy-auth.txt
 
 # modules
-%define apmodules   socache_shmcb proxy proxy_http rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp proxy proxy_http proxy_connect evasive24
+%define apmodules   socache_shmcb rewrite auth_basic auth_digest authn_core authz_core authn_file authn_otp proxy proxy_http proxy_connect evasive24
 
 # Rate limiting with mod_evasive
 %define modevconf   %{apconfdir}/mod_evasive.conf
@@ -85,7 +84,6 @@ subst()
         -e 's|@org_id@|%{org_id}|g' \
         -e 's|@otpfile@|%{otpfile}|g' \
         -e 's|@otppinfile@|%{otppinfile}|g' \
-        -e 's|@proxpwfile@|%{proxpwfile}|g' \
         -e 's|@publiclog@|%{publiclog}|g' \
         -e 's|@publicroot@|%{publicroot}|g' \
         -e 's|@serveremail@|%{serveremail}|g' \
@@ -141,9 +139,6 @@ install -d -m 0755 %{buildroot}%{_bindir}
 install -m 0755 scripts/genkey %{buildroot}%{_bindir}/genkey
 install -m 0755 setpin %{buildroot}%{_bindir}/
 
-# Proxy auth file
-install -m 0644 /dev/null %{buildroot}%{proxpwfile}
-
 %post
 
 # Load handy scripts
@@ -157,9 +152,6 @@ filevar_set_var %{apconfig} APACHE_SERVERADMIN '%{serveremail}'
 for MODULE in %{apmodules}; do
     a2enmod -q "${MODULE}" || a2enmod "${MODULE}"
 done
-
-# Disable port 80
-sed_patch_file %{listenconf} -r 's/^(Listen[[:space:]]+80[[:space:]]*)$/#\1/g'
 
 # Tweak mod_evasive params
 sed_patch_file '%{modevconf}' -r 's/^([[:space:]]*DOSPageCount[[:space:]]+)[0-9]+[[:space:]]*$/\1%{maxreqps}/g'
@@ -179,7 +171,6 @@ systemctl try-restart apache2.service
 %attr(400,mail,mail) %{eximdir}/ssl.key
 %attr(600,wwwrun,www) %config(noreplace) %{otpfile}
 %attr(640,root,www) %config(noreplace) %{otppinfile}
-%attr(640,root,www) %config(noreplace) %{proxpwfile}
 %attr(755,root,root) %{_bindir}/genkey
 %attr(4755,root,root) %{_bindir}/setpin
 
