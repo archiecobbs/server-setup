@@ -29,17 +29,17 @@ This is setup to use Let's Encrypt for obtaining an SSL Certificate.
 
 To setup SSL:
 
-    o Install the packages certbot and python-certbot-apache.
+    o Install the "certbot" package.
 
     o Verify settings in ../build.properties are correct.
 
     o Build and install this RPM normally. A fake SSL certificate will be installed,
-      but this will get the server up and running so you can use certbot's Apache
-      module to install a real one.
+      but this will get the server up and running so you can use certbot's built-in
+      "webroot" module to install a real one.
 
-    o Run "ant issue" to issue a new certificate, then rebuild and reinstall package.
+    o Run "ant certs" to issue a new certificate, then rebuild and reinstall package.
 
-    o Set a reminder every 80 days to run "ant renew" to renew your certificate,
+    o Set a reminder every 80 days to run "ant certs" to renew your certificate,
       rebuild, and reinstall package.
 
 To configure users and one-time passwords for /private access:
@@ -66,4 +66,7 @@ To configure users and one-time passwords for /private access:
     o Or as root, run this command to set any user's PIN:
 
         $ setpin -u username
+
+    o Then you login to the web server using your username and a password consisting of your
+      PIN and the OTP from Google Authenticator or genkey concatenated (in that order).
 

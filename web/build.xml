@@ -9,6 +9,9 @@
     <!-- Use default build instructions -->
     <import file="../default-build.xml"/>
 
+    <!-- Public install directory -->
+    <property name="web.root.dir" value="/srv/www"/>
+
     <!-- SSL cert info -->
     <property name="api.email" value="${org.contact}"/>
     <property name="ssl.domains" value="${web.hostname}"/>
@@ -16,48 +19,41 @@
     <!-- Pass extra flags to RPM build -->
     <property name="build.extra.rpm.flags" value="
         --define 'web_hostname ${web.hostname}'
+        --define 'publicroot ${web.root.dir}'
         --define 'basedir ${basedir}'
     "/>
 
-    <!-- Get API credentials -->
-    <target name="api.token" unless="api.token.completed">
-
-        <!-- Sanity check -->
-        <fail message="`api.email' property not defined" unless="api.email"/>
-
-        <!-- Read API token -->
-        <input message="&#10;Enter DNSimple APIv2 token for ${api.email}: " addproperty="api.token">
-            <handler type="secure"/>
-        </input>
-
-        <!-- Done -->
-        <property name="api.token.completed" value="true"/>
-    </target>
-
     <!-- Renew SSL certs -->
-    <target name="certs" depends="clean, api.token" unless="certs.completed">
-        <echo message="*** Renewing SSL certificates..."/>
-        <exec executable="/bin/bash" logError="true" failonerror="true">
-            <arg value="-c"/>
-            <arg value="
+    <target name="certs" depends="clean" unless="certs.completed">
+    <echo message="*** Renewing SSL certificates..."/>
+    <exec executable="/bin/bash" logError="true" failonerror="true">
+        <arg value="-c"/>
+        <arg value="
 
                 set -e;
 
+                TESTFILE=`sudo mktemp ${web.root.dir}/certbot-test-XXXXXXXX 2&gt;/dev/null || true`;
+                if [ -z &quot;$${TESTFILE}&quot; ]; then
+                    echo '*** Error: You must have permission to create files in ${web.root.dir}';
+                    exit 1;
+                fi;
+                trap &quot;sudo rm -f $${TESTFILE}&quot; 0 2 3 5 10 13 15;
+
                 rm -rf ${basedir}/build/certbot;
                 mkdir -p ${basedir}/build/certbot;
-                TEMP='${basedir}/build/creds.txt';
-                printf 'dns_dnsimple_token = %s\n' '${api.token}' > $${TEMP};
-                trap &quot;rm -f $${TEMP}&quot; 0 2 3 5 10 13 15;
 
                 DOMAINS='';
                 for DOMAIN in ${ssl.domains}; do
                     DOMAINS=&quot;$${DOMAINS} --domain $${DOMAIN}&quot;;
                 done;
 
+                USERNAME=`id -un`;
+
                 echo '';
                 echo &quot;*** Issue/Renew Certificate for domain(s): ${ssl.domains}&quot;;
                 echo '';
-                certbot --verbose certonly
+                sudo certbot certonly
+                  --verbose
                   --agree-tos
                   --non-interactive
                   --force-renewal
@@ -66,11 +62,12 @@
                   --config-dir '${basedir}/src/certbot'
                   --work-dir '${basedir}/build/certbot'
                   --logs-dir '${basedir}/build/certbot'
-                  --dns-dnsimple
-                  --dns-dnsimple-credentials &quot;$${TEMP}&quot;
-                  --dns-dnsimple-propagation-seconds 5
                   --cert-name '${web.hostname}'
+                  --webroot
+                  --webroot-path '${web.root.dir}'
                   $${DOMAINS};
+
+                sudo chown -R &quot;$${USERNAME}&quot; '${basedir}'/{src,build}/certbot;
 
                 find '${basedir}/src/certbot' -name '*.conf' -print0 | xargs -0 -n 1 sed -i 's|${basedir}/||g';
 

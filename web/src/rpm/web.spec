@@ -7,6 +7,7 @@
 #   org_name
 #   org_domain
 #   web_hostname
+#   publicroot
 #   basedir
 #
 
@@ -16,7 +17,6 @@
 %define listenconf  %{apachedir}/listen.conf
 %define apconfig    %{_sysconfdir}/sysconfig/apache2
 %define apconfdir   %{apachedir}/conf.d
-%define publicroot  /srv/www
 %define sslfiledir  %{pkgdir}/ssl
 %define sslcrtfile  %{sslfiledir}/ssl.crt
 %define sslkeyfile  %{sslfiledir}/ssl.key
@@ -105,6 +105,32 @@ for FILE in `find private public -type f -exec sh -c 'file {} | grep -qw text' \
     mv "${FILE}"{.new,}
 done
 
+# Generate temporary self-signed cert if needed
+
+# Verify RPM repo key exists
+if ! [ -f certbot/live/%{web_hostname}/privkey.pem ]; then
+    cat << 'xxEOFxx'
+
+    *****************************************************************************************
+
+    Creating a temporary self-signed SSL key and certificate.
+
+    After installing and starting Apache, run "ant cert" to get a real one.
+
+    *****************************************************************************************
+xxEOFxx
+
+    # Generate self-signed certificate
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+      -subj "/C=US/ST=State/L=City/O=%{org_name}/OU=%{org_name}/CN=%{web_hostname}" \
+      -keyout ssl.key -out ssl.crt
+else
+
+    # Copy real certificate
+    cp certbot/live/%{web_hostname}/privkey.pem     ssl.key
+    cp certbot/live/%{web_hostname}/fullchain.pem   ssl.crt
+fi
+
 %install
 
 # Public web files
@@ -121,13 +147,13 @@ install -m 0644 apache/%{name}.conf %{buildroot}%{apconfdir}/
 
 # SSL files
 install -d -m 0755 %{buildroot}%{sslfiledir}
-install -m 0600 certbot/live/%{web_hostname}/privkey.pem   %{buildroot}%{sslkeyfile}
-install -m 0644 certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{sslcrtfile}
+install -m 0600 ssl.key %{buildroot}%{sslkeyfile}
+install -m 0644 ssl.crt %{buildroot}%{sslcrtfile}
 
 # Exim's copy
 install -d -m 0755 %{buildroot}%{eximdir}
-install -m 0600 certbot/live/%{web_hostname}/privkey.pem   %{buildroot}%{eximdir}/ssl.key
-install -m 0644 certbot/live/%{web_hostname}/fullchain.pem %{buildroot}%{eximdir}/ssl.crt
+install -m 0600 ssl.key %{buildroot}%{eximdir}/ssl.key
+install -m 0644 ssl.crt %{buildroot}%{eximdir}/ssl.crt
 
 # OTP directory, OTP users file, and encrypted PINs
 install -d -m 0755 %{buildroot}%{otpdir}
