@@ -23,6 +23,7 @@ Buildarch:          noarch
 URL:                http://%{org_domain}/
 
 Requires:           git
+Requires:           python
 
 %description
 %{summary}.
