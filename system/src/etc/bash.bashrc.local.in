@@ -195,14 +195,18 @@ alias ,='cd -'
 
 # Git bash completion (if installed)
 _GIT_PROMPT_STUFF=""
-if [ -f /etc/bash_completion.d/git-prompt.sh ]; then
-    source /etc/bash_completion.d/git-prompt.sh
-    GIT_PS1_SHOWDIRTYSTATE="true"
-    GIT_PS1_SHOWSTASHSTATE="true"
-    GIT_PS1_SHOWUNTRACKEDFILES="true"
-    GIT_PS1_SHOWUPSTREAM="auto"
-    _GIT_PROMPT_STUFF='$(__git_ps1 " (%s)")'
-fi
+_GIT_COMPLETION_FILES="/etc/bash_completion.d/git-prompt.sh /etc/bash_completion.d/git-prompt"
+for _GIT_COMPLETION_FILE in ${_GIT_COMPLETION_FILES}; do
+    if [ -f "${_GIT_COMPLETION_FILE}" ]; then
+        source "${_GIT_COMPLETION_FILE}"
+        GIT_PS1_SHOWDIRTYSTATE="true"
+        GIT_PS1_SHOWSTASHSTATE="true"
+        GIT_PS1_SHOWUNTRACKEDFILES="true"
+        GIT_PS1_SHOWUPSTREAM="auto"
+        _GIT_PROMPT_STUFF='$(__git_ps1 " (%s)")'
+        break
+    fi
+done
 
 # Prompt setup
 _PROMPT_HOST=`cat /etc/HOSTNAME | sed -r 's/\.(@org_domain@)$//g'`
