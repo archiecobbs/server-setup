@@ -1,8 +1,0 @@
-[repo-update]
-name=openSUSE Tumbleweed Update
-type=rpm-md
-baseurl=@repobaseurl@/update/tumbleweed/
-gpgcheck=1
-enabled=1
-autorefresh=0
-keeppackages=0

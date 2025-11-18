@@ -46,19 +46,16 @@ and %{org_name} zypper repositories.
 # Load repo username & password function
 . scripts/repo-gen.sh '%{org_name}' '%{org_id}' '%{repo_host}' '%{repo_urlpath}' '%{?repo_pass}'
 
-# Generate openSUSE repo files
+# Create directory for repo files
 mkdir -p repofiles
-if [ '%{osrel}' = 'tumbleweed' ]; then
-    REPO_TMPL_DIR='repo/%{osrel}'
-else
-    REPO_TMPL_DIR='repo/leap'
-fi
-find "${REPO_TMPL_DIR}" -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
+
+# Generate openSUSE repo files
+find repo/leap -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`
     genrepo '%{osname}' '%{osrel}' '%{repobaseurl}' < "${REPOFILE}" > repofiles/"${FNAME}"
 done
 
-# Create %{org_name} repo file
+# Generate %{org_name} repo file
 genrepo '%{osname}' '%{osrel}' < repo/org/org.repo.in > repofiles/%{org_id}.repo
 
 %install
