@@ -27,7 +27,7 @@ BuildRoot:          %{_tmppath}/%{name}-root
 BuildRequires:      openssl
 Buildarch:          noarch
 URL:                http://%{org_domain}/
-%if "%{osrel}" >= "16.0"
+%if "%{osrel}" >= "15.6"
 Requires:       openSUSE-repos-Leap
 %endif
 
@@ -52,7 +52,7 @@ and %{org_name} zypper repositories.
 # Create directory for repo files
 mkdir -p repofiles
 
-%if "%{osrel}" < "16.0"
+%if "%{osrel}" < "15.6"
 # Generate openSUSE repo files
 find repo/leap -maxdepth 1 -name '*.repo.in' | while read REPOFILE; do
     FNAME=`basename "${REPOFILE}" | sed -r 's/\.in$//g'`
