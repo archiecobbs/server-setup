@@ -210,12 +210,16 @@ done
 
 # Prompt setup
 _PROMPT_HOST=`cat /etc/HOSTNAME | sed -r 's/\.(@org_domain@)$//g'`
-_PROMPT_SITE=`echo "${_PROMPT_HOST}" | sed -rn 's/^(.+)\.([^.]+)$/\2/gp'`
+_PROMPT_NODE=`echo "${_PROMPT_HOST}" | sed -rn 's/^([^.]+)\.([^.]+)(\..*|)$/\1/gp'`
+_PROMPT_SITE=`echo "${_PROMPT_HOST}" | sed -rn 's/^([^.]+)\.([^.]+)(\..*|)$/\2/gp'`
 _PROMPT_USER_WEIGHT=""
 _PROMPT_USER_COLOR=""
+_PROMPT_USER_RESET=""
+_PROMPT_NODE_WEIGHT=""
+_PROMPT_NODE_COLOR=""
+_PROMPT_NODE_RESET=""
 _PROMPT_SITE_WEIGHT=""
 _PROMPT_SITE_COLOR=""
-_PROMPT_USER_RESET=""
 _PROMPT_SITE_RESET=""
 _PROMPT_TAB_TITLE=`cat /etc/hostname | tr -d \\\\n | ( echo -ne '\e]1;'; cat; echo -ne '\a')`
 
@@ -235,17 +239,28 @@ if [ `id -u` -eq 0 ]; then
         _PROMPT_USER_COLOR="tput setaf 1"
     fi
 fi
-if [[ "${_PROMPT_SITE}" =~ ^(demo|test|dev) ]]; then
-    _PROMPT_SITE=""
-elif [ "${_PROMPT_SITE}" != "" ]; then
-    _PROMPT_HOST=`echo "${_PROMPT_HOST}" | sed -rn 's/^(.+\.)([^.]+)$/\1/gp'`
-    if [ -n "${TERM}" -a "${TERM}" != 'dumb' ]; then
-        _PROMPT_SITE_WEIGHT="tput bold"
-        _PROMPT_SITE_COLOR="tput setaf 1"
+if [ "${_PROMPT_SITE}" != "" ]; then
+    _PROPT_DOT="."
+    if ! [[ "${_PROMPT_SITE}" =~ ^(demo|test|dev|pexp) ]]; then
+        if [ -n "${TERM}" -a "${TERM}" != 'dumb' ]; then
+            _PROMPT_SITE_WEIGHT="tput bold"
+            _PROMPT_SITE_COLOR="tput setaf 1"
+            if [ "${_PROMPT_NODE}" = 'prod' ]; then
+                _PROMPT_NODE_WEIGHT="tput bold"
+                _PROMPT_NODE_COLOR="tput setaf 1"
+            fi
+        fi
     fi
+else
+    _PROMPT_SITE="${_PROMPT_HOST}"
+    _PROPT_DOT=""
 fi
+
 if [ -n "${_PROMPT_USER_COLOR}" ]; then
     _PROMPT_USER_RESET="tput sgr0"
+fi
+if [ -n "${_PROMPT_NODE_COLOR}" ]; then
+    _PROMPT_NODE_RESET="tput sgr0"
 fi
 if [ -n "${_PROMPT_SITE_COLOR}" ]; then
     _PROMPT_SITE_RESET="tput sgr0"
@@ -253,18 +268,22 @@ fi
 
 # Set prompt
 if ! shopt -q restricted_shell; then
-    PS1="${_PROMPT_TAB_TITLE}"'[\['$(${_PROMPT_USER_WEIGHT})$(${_PROMPT_USER_COLOR})'\]\u\['$(${_PROMPT_USER_RESET})'\]@'${_PROMPT_HOST}'\['$(${_PROMPT_SITE_WEIGHT})$(${_PROMPT_SITE_COLOR})'\]'${_PROMPT_SITE}'\['$(${_PROMPT_SITE_RESET})'\]'${_GIT_PROMPT_STUFF}'] \! '
+    PS1='[\['$(${_PROMPT_USER_WEIGHT})$(${_PROMPT_USER_COLOR})'\]\u\['$(${_PROMPT_USER_RESET})'\]@\['$(${_PROMPT_NODE_WEIGHT})$(${_PROMPT_NODE_COLOR})'\]'${_PROMPT_NODE}'\['$(${_PROMPT_NODE_RESET})'\]'${_PROPT_DOT}'\['$(${_PROMPT_SITE_WEIGHT})$(${_PROMPT_SITE_COLOR})'\]'${_PROMPT_SITE}'\['$(${_PROMPT_SITE_RESET})'\]'${_GIT_PROMPT_STUFF}'] \! '
 fi
 
 unset _PROMPT_USER_WEIGHT
 unset _PROMPT_USER_COLOR
 unset _PROMPT_SITE_WEIGHT
 unset _PROMPT_SITE_COLOR
+unset _PROMPT_NODE_WEIGHT
+unset _PROMPT_NODE_COLOR
 unset _PROMPT_HOST
 unset _PROMPT_SITE
+unset _PROMPT_NODE
+unset _PROPT_DOT
 unset _PROMPT_USER_RESET
 unset _PROMPT_SITE_RESET
-unset _PROMPT_TAB_TITLE
+unset _PROMPT_NODE_RESET
 unset _GIT_PROMPT_STUFF
 
 # Configure history
