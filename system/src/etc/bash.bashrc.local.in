@@ -209,7 +209,7 @@ for _GIT_COMPLETION_FILE in ${_GIT_COMPLETION_FILES}; do
 done
 
 # Prompt setup
-_PROMPT_HOST=`cat /etc/HOSTNAME | sed -r 's/\.(@org_domain@)$//g'`
+_PROMPT_HOST=`cat /etc/hostname | sed -r 's/\.(@org_domain@)$//g'`
 _PROMPT_NODE=`echo "${_PROMPT_HOST}" | sed -rn 's/^([^.]+)\.([^.]+)(\..*|)$/\1/gp'`
 _PROMPT_SITE=`echo "${_PROMPT_HOST}" | sed -rn 's/^([^.]+)\.([^.]+)(\..*|)$/\2/gp'`
 _PROMPT_USER_WEIGHT=""

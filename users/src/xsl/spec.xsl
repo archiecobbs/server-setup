@@ -33,7 +33,7 @@
 %define groupfile           %{_sysconfdir}/group
 %define sudoersdir          %{_sysconfdir}/sudoers.d
 %define tmpfile             %{_tmppath}/%{name}
-%define hostnamefile        %{_sysconfdir}/HOSTNAME
+%define hostnamefile        %{_sysconfdir}/hostname
 %define homedir             /home
 %define devnull             /dev/null
 %define nologin             %{_sbindir}/nologin
@@ -315,11 +315,11 @@ remove_old_users()
 <xsl:variable name="user" select="."/>
     # Determine shell account for user <xsl:value-of select="@username"/>
     USER_SHELL=""
-<xsl:for-each select="//privilege[@machine-class=$machine-class and nonShellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/HOSTNAME; then USER_SHELL="/sbin/nologin"; fi
+<xsl:for-each select="//privilege[@machine-class=$machine-class and nonShellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/hostname; then USER_SHELL="/sbin/nologin"; fi
 </xsl:for-each>
-<xsl:for-each select="//privilege[@machine-class=$machine-class and restrictedShellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/HOSTNAME; then USER_SHELL="/usr/bin/rbash"; fi
+<xsl:for-each select="//privilege[@machine-class=$machine-class and restrictedShellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/hostname; then USER_SHELL="/usr/bin/rbash"; fi
 </xsl:for-each>
-<xsl:for-each select="//privilege[@machine-class=$machine-class and shellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/HOSTNAME; then USER_SHELL="/bin/bash"; fi
+<xsl:for-each select="//privilege[@machine-class=$machine-class and shellAccount and @name = //group[@groupname = $user/group/@groupname]/privilege/@name]">    if grep -qE '<xsl:value-of select="@hosts"/>' /etc/hostname; then USER_SHELL="/bin/bash"; fi
 </xsl:for-each>
 
 </xsl:template>
