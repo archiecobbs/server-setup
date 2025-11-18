@@ -78,6 +78,10 @@ function gp() {
     git pull ${1+"$@"}
 }
 
+function gds() {
+    git diff --staged --color ${1+"$@"}
+}
+
 function gl() {
     git log ${1+"$@"}
 }
