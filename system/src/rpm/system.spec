@@ -19,7 +19,7 @@
 %define dhcpconf    %{_sysconfdir}/sysconfig/network/dhcp
 %define jrnconfmod  %{_sysconfdir}/systemd/journald.conf.d/%{name}
 %define services    ntpd systemd-journald sysstat
-%define zyppconf    %{_sysconfdir}/zypp/zypp.conf
+%define zyppconfmod %{_sysconfdir}/zypp/zypp.conf.d/%{name}.conf
 %define unservices  postfix
 
 %define roothome    /root
@@ -132,6 +132,14 @@ SystemMaxFileSize=10M
 SystemMaxFiles=50
 xxEOFxx
 
+# zypp.conf tweaks
+install -d -m 0755 `dirname %{buildroot}%{zyppconfmod}`
+cat > %{buildroot}%{zyppconfmod} << xxEOFxx
+# This file is part of %{name}-%{version}-%{release}
+solver.onlyRequires = true
+download.use_deltarpm = false
+xxEOFxx
+
 %post
 
 # Read scripts
@@ -195,12 +203,6 @@ for SERVICE in %{unservices}; do
     systemctl -q stop "${SERVICE}".service >/dev/null 2>&1 || :
 done
 
-# Tweak zypp.conf
-update_blurb %{zyppconf} << 'xxEOFxx'
-solver.onlyRequires = true
-download.use_deltarpm = false
-xxEOFxx
-
 %files
 %attr(644,root,root) %{_sysconfdir}/bash.bashrc.local
 %attr(644,root,root) %{_sysconfdir}/bash_completion
@@ -208,3 +210,4 @@ xxEOFxx
 %{bashrcdir}
 %{rootvimrc}
 %{jrnconfmod}
+%{zyppconfmod}
