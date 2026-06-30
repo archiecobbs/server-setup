@@ -59,6 +59,7 @@ URL:                        http://%{org_domain}/
 Requires(pre):              coreutils
 Requires(pre):              grep
 Requires(pre):              pwdutils
+Requires(pre):              system-user-mail
 Requires(post):             %{org_id}-rpm-scripts
 Requires(post):             sudo
 Requires(post):             gawk
