@@ -66,6 +66,25 @@ Requires(post):             gawk
 
 Provides:                   <xsl:value-of select="concat($this, ' = %{version}')"/>
 
+# User provides
+<xsl:for-each select="//user[
+    group/@groupname = //group[
+        privilege/@name = //privilege[
+            @machine-class = $machine-class and (nonShellAccount or restrictedShellAccount or shellAccount)
+        ]/@name
+    ]/@groupname
+]">
+Provides:                   user(<xsl:value-of select="@username"/>)
+</xsl:for-each>
+
+# Group provides
+<xsl:for-each select="//group[
+    privilege/@name = //privilege[
+        @machine-class = $machine-class and (nonShellAccount or restrictedShellAccount or shellAccount)
+    ]/@name]">
+Provides:                   group(<xsl:value-of select="@groupname"/>)
+</xsl:for-each>
+
 %description
 This RPM creates, modifies, or deletes users and groups on machines in class `%{machine_class}'.
 
