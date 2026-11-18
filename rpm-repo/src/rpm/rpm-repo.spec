@@ -35,6 +35,8 @@ Requires(pre):      pwdutils
 Requires(post):     findutils
 Requires(post):     createrepo_c >= 0.16.0
 
+Provides:           group(rpmrepo)
+
 %description
 %{summary}.
 
