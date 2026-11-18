@@ -98,7 +98,7 @@ done
 # Generate htpasswd file
 touch htpasswd.txt
 if [ -n "${REPO_PASSWORD}" ]; then
-    htpasswd2 -Bbn "${REPO_USERNAME}" "${REPO_PASSWORD}" | grep . > htpasswd.txt
+    htpasswd -Bbn "${REPO_USERNAME}" "${REPO_PASSWORD}" | grep . > htpasswd.txt
 fi
 
 # Generate apache config file
